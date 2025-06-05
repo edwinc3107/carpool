@@ -1,0 +1,5 @@
+# Set default behavior, in case user has core.autocrlf set differently
+* text=auto
+
+# Disable any processing on node_modules (treat as binary, no conversion)
+node_modules/** -text
