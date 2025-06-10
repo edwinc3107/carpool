@@ -4,7 +4,7 @@ function Form({ title, onSubmit, children }) {
       className="bg-gradient-to-br from-gray-800 to-black text-white rounded-2xl p-8 shadow-lg max-w-md w-full border border-lime-400"
       style={{ fontFamily: "Orbitron" }}
     >
-      <h2 className="text-3xl font-extrabold text-center text-lime-400 mb-6 drop-shadow-[0_1px_5px_lime]">
+      <h2 className="text-3xl font-extrabold text-center text-lime-400 mb-6">
         {title}
       </h2>
       <form onSubmit={onSubmit} className="space-y-6">
@@ -20,4 +20,4 @@ function Form({ title, onSubmit, children }) {
   );
 }
 
-export default Form;
+export default Form

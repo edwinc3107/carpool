@@ -2,55 +2,59 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Button from "./Button";
 import Form from "./assets/Form";
-import Button from "./Button"; 
 
-function Login() {
-  const navigate = useNavigate();
 
+function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  async function LoginSubmit(e) {
+  async function RegisterSubmit(e) {
     e.preventDefault();
-    const data = { email, password };
+
+    const data = { name, email, password }; 
 
     try {
-      const response = await axios.post("/login", data);
+      const response = await axios.post("/register", data);
 
-      if (response.data && !response.data.error) {
+      if (response.data?.error) {
+        toast.error(response.data.error, {
+          style: {
+            border: "1px solid #84cc16",
+            padding: "16px",
+            color: "#A3E635",
+            background: "#1f2937",
+          },
+          iconTheme: {
+            primary: "#84cc16",
+            secondary: "#F7FEE7",
+          },
+        });
+      } else {
+        toast.success("Registration Successful!", {
+          style: {
+            border: "1px solid #84cc16",
+            padding: "16px",
+            color: "#A3E635",
+            background: "#1f2937",
+          },
+          iconTheme: {
+            primary: "#84cc16",
+            secondary: "#F7FEE7",
+          },
+        });
+
+        setName("");
         setEmail("");
         setPassword("");
-        toast.success("Login Successful!", {
-          style: {
-            border: "1px solid #84cc16",
-            padding: "16px",
-            color: "#A3E635",
-            background: "#1f2937",
-          },
-          iconTheme: {
-            primary: "#84cc16",
-            secondary: "#F7FEE7",
-          },
-        });
-        navigate("/dashboard");
-      } else {
-        toast.error(response.data.error || "Login failed", {
-          style: {
-            border: "1px solid #84cc16",
-            padding: "16px",
-            color: "#A3E635",
-            background: "#1f2937",
-          },
-          iconTheme: {
-            primary: "#84cc16",
-            secondary: "#F7FEE7",
-          },
-        });
+        navigate("/l");
       }
     } catch (err) {
-      console.log(err);
-      toast.error("Something went wrong. Check console.");
+      console.error("Registration error:", err);
+      toast.error("Server error. Please try again later.");
     }
   }
 
@@ -60,26 +64,35 @@ function Login() {
       style={{ fontFamily: "Orbitron" }}
     >
       <div className="flex justify-center gap-2 py-4">
-        <Form title="Login" onSubmit={LoginSubmit}>
+        <Form title="Welcome, register here!" onSubmit={RegisterSubmit}>
+          <input
+            type="text"
+            placeholder="Enter your username"
+            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
           <input
             type="email"
             placeholder="Enter your email"
-            className="w-full p-2 rounded border border-lime-400 text-lime-400 placeholder-lime-400"
+            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="password"
             placeholder="Enter your password"
-            className="w-full p-2 rounded border border-lime-400 text-lime-400 placeholder-lime-400"
+            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </Form>
       </div>
     </div>
-
-  )
+  );
 }
 
-export default Login;
+export default Register;
