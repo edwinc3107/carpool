@@ -1,0 +1,30 @@
+const mongoose = require('mongoose');
+
+const HostSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  from: { type: String, required: true },
+  to: { type: String, required: true },
+  rideDate: { type: Date, required: true },
+  openseats: { type: Number, min: 0, required: true },
+  message: {
+    type: String,
+    default: function () {
+      return `Ride from ${this.from} to ${this.to}. Seats available: ${this.openseats}.`;
+    }
+  },
+  phone: { type: String },
+  vehicle: {
+    make: String,
+    model: String,
+    color: String,
+    plate: String
+  },
+  preferences: {
+    music: Boolean,
+    smoking: Boolean,
+    pets: Boolean
+  }
+}, { timestamps: true });
+
+const HostModel = mongoose.model('Host', HostSchema);
+module.exports = HostModel;
