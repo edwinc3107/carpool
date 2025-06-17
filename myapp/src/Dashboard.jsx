@@ -2,6 +2,8 @@ import { UserContext } from "./context/UserContext";
 import { useContext, useEffect } from "react";
 import Navbar from "./Navbar";
 import Card from './assets/Card';
+import FindRide from "./FindRide";
+import HostRide from "./HostRide";
 
 function Dashboard(){
     const { user } = useContext(UserContext);
@@ -70,6 +72,9 @@ function Dashboard(){
         <div className="text-2xl font-semibold m-40">
          Whether you're commuting home, heading to a new city, or just passing through — our platform connects drivers and riders heading in the same direction. With intelligent route matching, shared costs, and real-time ride management, we’re building a community where every mile traveled means more saved — in money, fuel, and carbon. Join the movement toward smarter, sustainable travel.
         </div>
+        </div>
+        <div>
+          <HostRide></HostRide>
         </div>
         </>
     );
