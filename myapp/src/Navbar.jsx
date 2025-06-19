@@ -20,7 +20,7 @@ function Navbar() {
         </li>
         <li>
           <a
-            href="#"
+            href="/hostride"
             className="text-white font-semibold px-5 py-2 inline-block rounded transition duration-300 ease-in-out hover:border-b-4 hover:border-lime-400"
           >
             Host Ride
