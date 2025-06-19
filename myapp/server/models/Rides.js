@@ -13,12 +13,6 @@ const HostSchema = new mongoose.Schema({
     }
   },
   phone: { type: String },
-  vehicle: {
-    make: String,
-    model: String,
-    color: String,
-    plate: String
-  },
   preferences: {
     music: Boolean,
     smoking: Boolean,

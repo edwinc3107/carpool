@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const UserModel = require("../models/Users")
 const jwt = require('jsonwebtoken')
 const cookie = require('cookie-parser')
+const RideModel = require('../models/Rides')
 
 function test(req, res) {
     console.log("Test function!");
@@ -93,9 +94,57 @@ const getProfile = async(req, res) =>{
     res.status(403).json({ error: "Token invalid or expired" });
   }
 };
+const HostRide = async (req, res) => {
+  const { token } = req.cookies;
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const { from, to, date, openseats, phone, message, preferences } = req.body;
+
+    if (!from || !to || !date || !openseats || !phone || !preferences) {
+      return res.status(400).json({ error: "Please enter all fields!" });
+    }
+    const rideMessage = message || `Ride from ${from} to ${to}. Seats available: ${openseats}.`;
+
+    const createRide = await RideModel.create({
+      user: userId,
+      from,
+      to,
+      rideDate: date,
+      openseats,
+      phone,
+      message: rideMessage,
+      preferences,
+    });
+
+    return res.status(201).json({
+      message: "Ride hosted!",
+      rideDetails: {
+        id: createRide._id,
+        from: createRide.from,
+        to: createRide.to,
+        date: createRide.rideDate,
+        openseats: createRide.openseats,
+        phone: createRide.phone,
+        message: createRide.message,
+        preferences: createRide.preferences,
+      },
+    });
+  } catch (err) {
+    console.error("Error occurred:", err);
+    return res.status(500).json({ error: "Server error. Try again later." });
+  }
+};
+
 module.exports = {
     test,
     loginUser,
     registerUser,
-    getProfile
+    getProfile,
+    HostRide,
 };

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import { toast } from 'react-hot-toast';
+import Navbar from "./Navbar";
+
 function HostRide(){
 
 const [data, setData]=useState({    
@@ -21,7 +24,7 @@ const [data, setData]=useState({
 
     if (name.includes("preferences.")) {
         const key = name.split('.')[1] //this gives us 'music' from preferences.music, 
-          setFormData((prev) => ({
+          setData((prev) => ({
                 ...prev,  //uses the present state of form
                 preferences: { 
                 ...prev.preferences, //uses the present state of preferences in form
@@ -30,7 +33,7 @@ const [data, setData]=useState({
             }));
     }
     else{
-            setFormData((prev) => ({
+            setData((prev) => ({
                 ...prev,
                 [name]: type === "checkbox" ? checked : value,
             }));
@@ -44,7 +47,7 @@ const [data, setData]=useState({
     const rideinfo = data
 
     try {
-      const response = await axios.post("/register", rideinfo);
+      const response = await axios.post("/hostride", rideinfo);
 
       if (response.data?.error) {
         toast.error(response.data.error, {
@@ -95,6 +98,7 @@ const [data, setData]=useState({
 
     return(
         <>
+        <Navbar></Navbar>
         <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 text-white">
         <div className="pt-38 px-20">
         <h1 className="text-3xl font-semibold text-lime-400">
