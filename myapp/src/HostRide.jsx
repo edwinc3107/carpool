@@ -99,65 +99,133 @@ const [data, setData]=useState({
     return(
         <>
         <Navbar></Navbar>
-        <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 text-white">
-        <div className="pt-38 px-20">
-        <h1 className="text-3xl font-semibold text-lime-400">
-            Discover travellers on the same journey - connect, chat & commute. Together.
-        </h1></div>
+        <div className="w-full h-full bg-black text-white">
         <div className=" pt-60  pb-30 font-semibold text-6xl flex justify-center font-sans text-lime-400">
             So, where you off to?<br></br>Fill the form below & host your ride!
         </div>
         <div className="py-15 grid-rows-3 flex justify-between px-30">
-        <form onSubmit={onSubmit} className="w-full h-full bg-white rounded px-20 py-20 text-gray-700"> 
-            <div className="py-3">
-                <label className="font-medium">Start Location</label>
-                <input type="text" name="from" value={data.from} onChange={handleChange} placeholder="Where are you leaving from?" className="w-full m-2 px-2 border rounded-full py-3" />
-            </div>
-            <div className="py-3">
-                <label className="font-medium">Stop Location:</label>
-                <input type="text" value={data.to} name="to"   onChange={handleChange} placeholder="Where are you going?" className="w-full m-2 px-2 border rounded-full py-3" />
-            </div>
-            
-            <div className="py-3">
-                <label className="font-medium">Date of travel:</label>
-                <input type="date" value={data.date} name="date"   onChange={handleChange} placeholder="When?" className="w-full m-2 px-2 border rounded-full py-3" />
-            </div>
+            <form onSubmit={onSubmit} className="w-full max-w-3xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl px-10 py-14 text-white shadow-xl transition-all duration-300">
+                <h2 className="text-3xl font-bold text-lime-400 mb-8 text-center">Host a Ride</h2>
+                <div className="grid gap-6">
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Start Location</label>
+                    <input
+                        type="text"
+                        name="from"
+                        value={data.from}
+                        onChange={handleChange}
+                        placeholder="Where are you leaving from?"
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                    />
+                    </div>
 
-            <div className="py-3">
-                <label className="font-medium">Seats available:</label>
-                <input type="number" value={data.openseats} name="openseats" min="1" max="10"  onChange={handleChange} className="w-full m-2 px-2 border rounded-full py-3" />
-            </div>
-            
-            <div className="py-3">
-                <label className="block font-medium text-gray-700">Phone Number:</label>
-                <input type="tel" value={data.phone} name="phone"  onChange={handleChange} placeholder="123-456-7890" className="w-full p-2 border rounded-full py-3" />
-            </div>
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Stop Location</label>
+                    <input
+                        type="text"
+                        name="to"
+                        value={data.to}
+                        onChange={handleChange}
+                        placeholder="Where are you going?"
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                    />
+                    </div>
 
-            <div className="py-3">
-                <label className="block font-medium text-gray-700">Message to Travel Buddies</label>
-                <textarea name="message" value={data.message} rows="3" onChange={handleChange} placeholder="For example: Bring snacks, good vibes only!" className="w-full p-2 border rounded" />
-            </div>
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Date of Travel</label>
+                    <input
+                        type="date"
+                        name="date"
+                        value={data.date}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                    />
+                    </div>
 
-            <fieldset className="border rounded p-4 py-3">
-                <legend className="font-medium text-gray-700 py-3">Preferences</legend>
-                <label className="block">
-                <input type="checkbox" checked={data.preferences.music} onChange={handleChange} name="preferences.music" className="mr-2" />
-                Music Allowed
-                </label>
-                <label className="block">
-                <input type="checkbox" name="preferences.smoking" checked={data.preferences.smoking} onChange={handleChange} className="mr-2" />
-                Smoking Allowed
-                </label>
-                <label className="block">
-                <input type="checkbox" name="preferences.pets" checked={data.preferences.pets} onChange={handleChange} className="mr-2 py-3" />
-                Pets Allowed
-                </label>
-            </fieldset>
-            <div className="flex justify-center">
-            <button type="submit" className="bg-lime-500 text-white px-6 py-3 m-3 rounded hover:bg-lime-600">
-                Submit Ride
-            </button></div>
-            </form>
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Seats Available</label>
+                    <input
+                        type="number"
+                        name="openseats"
+                        value={data.openseats}
+                        min="1"
+                        max="10"
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Phone Number</label>
+                    <input
+                        type="tel"
+                        name="phone"
+                        value={data.phone}
+                        onChange={handleChange}
+                        placeholder="123-456-7890"
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Message to Travel Buddies</label>
+                    <textarea
+                        name="message"
+                        rows="3"
+                        value={data.message}
+                        onChange={handleChange}
+                        placeholder="For example: Bring snacks, good vibes only!"
+                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition resize-none"
+                    />
+                    </div>
+
+                    <fieldset className="border border-white/30 rounded-xl p-5">
+                    <legend className="text-sm uppercase font-semibold text-white mb-4">Preferences</legend>
+                    <div className="flex flex-col gap-3">
+                        <label className="inline-flex items-center">
+                        <input
+                            type="checkbox"
+                            checked={data.preferences.music}
+                            onChange={handleChange}
+                            name="preferences.music"
+                            className="accent-lime-400 w-5 h-5 mr-3"
+                        />
+                        Music Allowed
+                        </label>
+                        <label className="inline-flex items-center">
+                        <input
+                            type="checkbox"
+                            name="preferences.smoking"
+                            checked={data.preferences.smoking}
+                            onChange={handleChange}
+                            className="accent-lime-400 w-5 h-5 mr-3"
+                        />
+                        Smoking Allowed
+                        </label>
+                        <label className="inline-flex items-center">
+                        <input
+                            type="checkbox"
+                            name="preferences.pets"
+                            checked={data.preferences.pets}
+                            onChange={handleChange}
+                            className="accent-lime-400 w-5 h-5 mr-3"
+                        />
+                        Pets Allowed
+                        </label>
+                    </div>
+                    </fieldset>
+
+                    <div className="flex justify-center pt-4">
+                    <button
+                        type="submit"
+                        className="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-transform transform hover:scale-105"
+                    >
+                        Submit Ride
+                    </button>
+                    </div>
+                </div>
+                </form>
+
         </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>

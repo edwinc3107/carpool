@@ -51,7 +51,7 @@ function Dashboard(){
         <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 text-white">
         <div className="pt-38 px-20">
         <h1 className="text-3xl font-semibold">
-            Welcome, to your portal traveller!
+           {user ? `Welcome, to your portal, ${user.name}!` : "Loading your portal..."}
         </h1></div>
         <div className=" py-60 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             Whether you have a ride or looking for a ride, <br></br>it all starts here.
