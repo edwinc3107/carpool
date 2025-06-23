@@ -4,7 +4,7 @@ function Navbar() {
       <ul className="flex justify-center divide-x divide-gray-600">
         <li>
           <a
-            href="#"
+            href="/dashboard"
             className="text-white font-semibold px-5 py-2 inline-block rounded transition duration-300 ease-in-out hover:border-b-4 hover:border-lime-400"
           >
             Home
@@ -12,7 +12,7 @@ function Navbar() {
         </li>
         <li>
           <a
-            href="#"
+            href="/findride"
             className="text-white font-semibold px-5 py-2 inline-block rounded transition duration-300 ease-in-out hover:border-b-4 hover:border-lime-400"
           >
             Find Ride
@@ -28,7 +28,7 @@ function Navbar() {
         </li>
         <li>
           <a
-            href="#"
+            href="/findride"
             className="text-white font-semibold px-5 py-2 inline-block rounded transition duration-300 ease-in-out hover:border-b-4 hover:border-lime-400"
           >
             My Profile
