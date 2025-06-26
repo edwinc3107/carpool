@@ -74,7 +74,6 @@ function Dashboard(){
         </div>
         </div>
         <div>
-          <HostRide></HostRide>
         </div>
         </>
     );

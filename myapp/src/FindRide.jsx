@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import Navbar from "./Navbar";
 
 function FindRide(){
-
+const [foundRides, setFoundRides] = useState([]);
 const [data, setData]=useState({    
     from: "",
     to: "",
@@ -43,11 +43,10 @@ const [data, setData]=useState({
     async function onSubmit(e){
     
     e.preventDefault();
-
     const rideinfo = data
 
     try {
-      const response = await axios.post("/hostride", rideinfo);
+      const response = await axios.post("/findride", rideinfo);
 
       if (response.data?.error) {
         toast.error(response.data.error, {
@@ -63,7 +62,7 @@ const [data, setData]=useState({
           },
         });
       } else {
-        toast.success("Ride hosted!", {
+        toast.success("Rides found!", {
           style: {
             border: "1px solid #84cc16",
             padding: "16px",
@@ -75,6 +74,8 @@ const [data, setData]=useState({
             secondary: "#F7FEE7",
           },
         });
+
+        setFoundRides(response.data.rides);
 
         setData({    
                 from: "",
@@ -190,6 +191,23 @@ const [data, setData]=useState({
                 </form>
 
         </div>
+        <div>
+                        {foundRides.length > 0 && (
+                <div className="mt-10 text-white">
+                  <h2 className="text-2xl mb-4">Available Rides:</h2>
+                  {foundRides.map((ride) => (
+                    <div key={ride._id} className="bg-white/10 p-4 mb-4 rounded-xl">
+                      <p><strong>From:</strong> {ride.from}</p>
+                      <p><strong>To:</strong> {ride.to}</p>
+                      <p><strong>Date:</strong> {new Date(ride.rideDate).toDateString()}</p>
+                      <p><strong>Host:</strong> {ride.user?.name || 'Unknown'}</p>
+                      <p><strong>Seats:</strong> {ride.openseats}</p>
+                      <p><strong>Phone:</strong> {ride.phone}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+         </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
             Our Mission : to make long-distance travel more efficient, affordable, and human. 

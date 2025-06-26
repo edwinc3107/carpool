@@ -141,10 +141,47 @@ const HostRide = async (req, res) => {
   }
 };
 
+const FindRide = async (req, res) => {
+    const { token } = req.cookies;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized. Please login first." });
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.id;
+
+      const { from, to, date } = req.body;
+
+      const query = {
+        user: { $ne: userId }, // exclude current user's own rides
+      };
+
+      if (from) query.from = new RegExp(`^${from}$`, 'i');
+      if (to) query.to = new RegExp(`^${to}$`, 'i');
+      if (date) {
+        const searchDate = new Date(date);
+        const nextDay = new Date(searchDate);
+        nextDay.setDate(searchDate.getDate() + 1);
+        query.rideDate = { $gte: searchDate, $lt: nextDay };
+      }
+
+      const rides = await RideModel.find(query).populate("user", "name");
+
+      console.log("Backend response data:", rides);
+
+      res.status(200).json({ rides });
+    } catch (err) {
+      console.error("FindRide error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
 module.exports = {
     test,
     loginUser,
     registerUser,
     getProfile,
     HostRide,
+    FindRide,
 };
