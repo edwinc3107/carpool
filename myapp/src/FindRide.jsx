@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from 'react-hot-toast';
 import Navbar from "./Navbar";
+import { MapPin, CalendarDays, User, Phone, Users } from 'lucide-react';
 
 function FindRide(){
 const [foundRides, setFoundRides] = useState([]);
@@ -196,14 +197,35 @@ const [data, setData]=useState({
                 <div className="mt-10 text-white">
                   <h2 className="text-2xl mb-4">Available Rides:</h2>
                   {foundRides.map((ride) => (
-                    <div key={ride._id} className="bg-white/10 p-4 mb-4 rounded-xl">
-                      <p><strong>From:</strong> {ride.from}</p>
-                      <p><strong>To:</strong> {ride.to}</p>
-                      <p><strong>Date:</strong> {new Date(ride.rideDate).toDateString()}</p>
-                      <p><strong>Host:</strong> {ride.user?.name || 'Unknown'}</p>
-                      <p><strong>Seats:</strong> {ride.openseats}</p>
-                      <p><strong>Phone:</strong> {ride.phone}</p>
-                    </div>
+                    <div key={ride._id} className="bg-white/10 p-8 mb-4 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
+                        {/* First Row: From and To */}
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <div className="">
+                            <strong> <MapPin size={16} />From:</strong> <br></br>
+                            <p>{ride.from}</p>
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin size={16} />
+                            <strong>To:</strong> <br></br>{ride.to}
+                          </div>
+                        </div>
+
+                        {/* Second Row: Date, Host, Seats */}
+                        <div className="flex flex-col md:flex-row flex-wrap gap-4">
+                          <div className="flex items-center gap-2">
+                            <CalendarDays size={16} />
+                            <strong>Date:</strong> {new Date(ride.rideDate).toDateString()}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <User size={16} />
+                            <strong>Host:</strong> {ride.user?.name || 'Unknown'}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Users size={16} />
+                            <strong>Seats:</strong> {ride.openseats}
+                          </div>
+                        </div>
+                      </div>
                   ))}
                 </div>
               )}
