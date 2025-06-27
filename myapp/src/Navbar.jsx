@@ -1,6 +1,6 @@
 function Navbar() {
   return (
-    <div className="fixed top-0 w-full py-6 z-50 bg-black/70 backdrop-blur-md" style={{ fontFamily: "Orbitron" }}>
+    <div className="fixed top-0 w-full py-6 z-50  backdrop-blur-md">
       <ul className="flex justify-center divide-x divide-gray-600">
         <li>
           <a
