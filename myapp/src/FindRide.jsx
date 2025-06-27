@@ -193,38 +193,65 @@ const [data, setData]=useState({
 
         </div>
         <div>
-                        {foundRides.length > 0 && (
+            {foundRides.length > 0 && (
                 <div className="mt-10 text-white">
-                  <h2 className="text-2xl mb-4">Available Rides:</h2>
+                  <h2 className="text-2xl mb-4 px-30 font-sans">Available Rides</h2>
                   {foundRides.map((ride) => (
-                    <div key={ride._id} className="bg-white/10 p-8 mb-4 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
-                        {/* First Row: From and To */}
-                        <div className="flex flex-col md:flex-row gap-4">
-                          <div className="">
-                            <strong> <MapPin size={16} />From:</strong> <br></br>
-                            <p>{ride.from}</p>
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin size={16} />
-                            <strong>To:</strong> <br></br>{ride.to}
-                          </div>
-                        </div>
-
-                        {/* Second Row: Date, Host, Seats */}
-                        <div className="flex flex-col md:flex-row flex-wrap gap-4">
-                          <div className="flex items-center gap-2">
+                    <div key={ride._id} className="bg-white/10  p-5 mb-4 m-20 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
+                              <div>
+                              <div className="flex p-1 bg-red-300 gap-10 h-30">
+                                        <div className="p-4 m-2 bg-red-400 w-50 h-20">
+                                          <strong className="text-sm flex items-center gap-1">
+                                            <MapPin size={16} /> From:
+                                          </strong>
+                                          <p className="text-xl break-words">{ride.from}</p>
+                                        </div>
+                                        <div className="p-4 m-2 bg-blue-400 w-50 h-20">
+                                          <strong className="text-sm flex items-center gap-1">
+                                            <MapPin size={16} /> To:
+                                          </strong>
+                                          <p className="text-xl break-words">{ride.to}</p>
+                                        </div>
+                                      </div>
+                          <div className="flex">
+                          <div className="bg-green-500 p-1 py-10">
+                          <div className="flex p-1 items-center gap-2">
                             <CalendarDays size={16} />
-                            <strong>Date:</strong> {new Date(ride.rideDate).toDateString()}
+                            <strong className="text-sm">Date:</strong> {new Date(ride.rideDate).toDateString().split(' ')[1]+ ' '+ new Date(ride.rideDate).toDateString().split(' ')[2]+ ', '+new Date(ride.rideDate).toDateString().split(' ')[3]}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex p-1 items-center gap-2">
                             <User size={16} />
-                            <strong>Host:</strong> {ride.user?.name || 'Unknown'}
+                            <strong className="text-sm">Host:</strong> <p>{ride.user?.name || 'Unknown'}</p>
                           </div>
-                          <div className="flex items-center gap-2">
+                        <div>
+                            <div className="flex p-1 items-center gap-2">
                             <Users size={16} />
-                            <strong>Seats:</strong> {ride.openseats}
+                            <strong className="text-sm">Open Seats:</strong> <p>{ride.openseats}</p>
                           </div>
                         </div>
+                        </div>
+                        <div>
+                        <div className="flex gap-50 bg-blue-700 p-10 gap-10 ml-20 mt-10">
+                        <div>
+                            <strong className="text-sm">Distance:</strong> <p>{'Value'}</p>
+                        </div>
+                        <div>
+                            <strong className="text-sm">Duration:</strong> <p>{'Value'}</p>
+                        </div>
+                        <div>
+                            <strong className="text-sm">Price:</strong> <p>{'Value'}</p>
+                        </div>
+                      </div>
+                        </div>
+                        <div>
+                          <button className="m-20 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 ease-in-out">
+                            Request to join
+                          </button>
+
+                          </div>
+                        </div>
+                      </div>
+
                       </div>
                   ))}
                 </div>
