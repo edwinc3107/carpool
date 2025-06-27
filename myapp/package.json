@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "lucide-react": "^0.523.0",
     "nodemon": "^3.1.10",
+    "particles.js": "^2.0.0",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.0",

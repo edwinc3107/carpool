@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Card from './assets/Card';
 import FindRide from "./FindRide";
 import HostRide from "./HostRide";
+import MyRides from "./MyRides";
 
 function Dashboard(){
     const { user } = useContext(UserContext);
@@ -56,13 +57,16 @@ function Dashboard(){
         <div className=" py-60 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             Whether you have a ride or looking for a ride, <br></br>it all starts here.
         </div>
-                    <h2 className="text-2xl font-semibold px-20 pt-10"> Features: </h2>
-        <div className="py-15 grid-rows-3 flex justify-between px-30">
-            <div className="flex flex-wrap justify-center gap-6 px-10 py-10">
+                    <h2 className="pt-50 font-semibold text-5xl flex justify-center font-sans text-lime-400"> Features: </h2>
+        <div className="py-10 grid-rows-3 flex justify-between px-30">
+            <div className="flex flex-wrap gap-10 justify-center py-10">
                 {features.map((f,index) => (
                     <Card key={index} Title={f.title} feature={f.features} link={f.link}/>
                 ))}
             </div>
+        </div>
+        <div>
+          <MyRides></MyRides>
         </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
