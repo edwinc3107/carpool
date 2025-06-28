@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Form from "./assets/Form";
 import Button from "./Button"; 
+import { UserContext } from "./context/UserContext";
 
 function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setUser } = useContext(UserContext);
 
   async function LoginSubmit(e) {
     e.preventDefault();
@@ -33,6 +35,7 @@ function Login() {
             secondary: "#F7FEE7",
           },
         });
+        setUser(response.data);
         navigate("/dashboard");
       } else {
         toast.error(response.data.error || "Login failed", {
