@@ -7,7 +7,7 @@ import HostRide from "./HostRide";
 import MyRides from "./MyRides";
 
 function Dashboard(){
-    const { user } = useContext(UserContext);
+    const { user, loadingUser } = useContext(UserContext);
     const features = [
   {
     title: "Smart Routes",
