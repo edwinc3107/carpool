@@ -231,6 +231,69 @@ const logoutUser = async (req, res) => {
     
 };
 
+const sendRequest = async (req, res) => {
+    const { token } = req.cookies;
+    const { rideId } = req.body;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized. Please login first." });
+    }
+
+    try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const ride = await RideModel.findById(rideId);  //find the ride in database
+
+    if(!ride) return res.status(404).json({error:"Ride not found!"})
+    
+    if(ride.requests.includes(userId) || ride.passengers.includes(userId)){
+      return res.status(400).json({error: "Already requested or joined!"})
+    }
+
+    ride.requests.push(userId);
+    await ride.save(); //saves new document updates
+    return res.status(200).json({ message: "Request sent successfully" });
+
+  } catch (err) {
+    console.error("Rides error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const MyRideRequests = async (req, res) => {
+  const { token } = req.cookies;
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const rides = await RideModel.find({ user: userId }).populate("requests", "name email");
+
+    const pendingRequests = rides
+      .filter(ride => ride.requests.length > 0)
+      .map(ride => ({
+        rideId: ride._id,
+        from: ride.from,
+        to: ride.to,
+        rideDate: ride.rideDate,
+        requests: ride.requests.map(user => ({
+          id: user._id,
+          name: user.name,
+          email: user.email
+        }))
+      }));
+    return res.status(200).json({ pendingRequests });
+
+  } catch (err) {
+    console.error("Requests error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+
 module.exports = {
     test,
     loginUser,
@@ -240,4 +303,7 @@ module.exports = {
     FindRide,
     FindMyRides,
     logoutUser,
+    sendRequest,
+    MyRideRequests,
+
 };

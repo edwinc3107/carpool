@@ -8,6 +8,8 @@ import MyRides from "./MyRides";
 
 function Dashboard(){
     const { user, loadingUser } = useContext(UserContext);
+    const [pendingRequests, setPendingRequests] = useState([]);
+
     const features = [
   {
     title: "Smart Routes",
@@ -45,6 +47,22 @@ function Dashboard(){
         console.log("User context in Dashboard:", user);
     }, [user]);
 
+
+    useEffect(() => {
+      axios.get('/findmyrequest')
+        .then(res => {
+          if (res.data.pendingRequests.length === 0) {
+            console.log("No pending requests");
+          } else {
+            setPendingRequests(res.data.pendingRequests);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch ride requests:", err);
+        });
+    }, []);
+
+
     return(
         <>
         <Navbar></Navbar>
@@ -52,7 +70,7 @@ function Dashboard(){
         <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 text-white">
         <div className="pt-38 px-20">
         <h1 className="text-3xl font-semibold">
-           {user ? `Welcome, to your portal, ${user.name}!` : "Loading your portal..."}
+           {user ? `${user.name}'s dashboard` : "....."}
         </h1></div>
         <div className=" py-60 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             Whether you have a ride or looking for a ride, <br></br>it all starts here.
@@ -67,6 +85,20 @@ function Dashboard(){
         </div>
         <div>
           <MyRides></MyRides>
+        </div>
+         <div>
+         <div className="flex flex-wrap gap-10 justify-center py-10">
+            {pendingRequests.map((p, index) => (
+              <Card key={index} Title={"Request"} feature={
+                <div>
+                  <p>{p.requests[0].name} wants to join you!</p>
+                  <p>From: {p.from}</p>
+                  <p>To: {p.to}</p>
+                  <p>On: {new Date(p.rideDate).toLocaleDateString()}</p>
+                </div>
+              } />
+            ))}
+          </div>
         </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
