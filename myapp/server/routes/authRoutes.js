@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { test, loginUser, registerUser, getProfile, HostRide, FindRide, FindMyRides, logoutUser, sendRequest, MyRideRequests } = require('../controls/authController');
+const { test, loginUser, registerUser, getProfile, HostRide, FindRide, FindMyRides, logoutUser, sendRequest, MyRideRequests, ApproveRequest, DenyRequest} = require('../controls/authController');
 
 // Router methods: GET, POST, PUT, DELETE
 router.get('/', test);
@@ -13,5 +13,7 @@ router.post('/findride', FindRide);
 router.post('/logout', logoutUser);
 router.put('/request', sendRequest);
 router.get('/findmyrequest',MyRideRequests);
+router.put('/approve-request', ApproveRequest);
+router.put('/deny-request', DenyRequest);
 
 module.exports = router;
