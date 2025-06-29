@@ -17,7 +17,11 @@ const HostSchema = new mongoose.Schema({
     music: Boolean,
     smoking: Boolean,
     pets: Boolean
-  }
+  },
+
+  passengers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  
 }, { timestamps: true });
 
 const HostModel = mongoose.model('Host', HostSchema);

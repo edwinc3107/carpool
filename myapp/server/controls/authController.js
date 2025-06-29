@@ -231,6 +231,169 @@ const logoutUser = async (req, res) => {
     
 };
 
+const sendRequest = async (req, res) => {
+    const { token } = req.cookies;
+    const { rideId } = req.body;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized. Please login first." });
+    }
+
+    try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const ride = await RideModel.findById(rideId);  //find the ride in database
+
+    if(!ride) return res.status(404).json({error:"Ride not found!"})
+    
+    if(ride.requests.includes(userId) || ride.passengers.includes(userId)){
+      return res.status(400).json({error: "Already requested or joined!"})
+    }
+
+    ride.requests.push(userId);
+    await ride.save(); //saves new document updates
+    return res.status(200).json({ message: "Request sent successfully" });
+
+  } catch (err) {
+    console.error("Rides error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const MyRideRequests = async (req, res) => {
+  const { token } = req.cookies;
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const rides = await RideModel.find({ user: userId }).populate("requests", "name email");
+
+    const pendingRequests = rides
+      .filter(ride => ride.requests.length > 0)
+      .map(ride => ({
+        rideId: ride._id,
+        from: ride.from,
+        to: ride.to,
+        rideDate: ride.rideDate,
+        requests: ride.requests.map(user => ({
+          id: user._id,
+          name: user.name,
+          email: user.email
+        }))
+      }));
+    return res.status(200).json({ pendingRequests });
+
+  } catch (err) {
+    console.error("Requests error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const ApproveRequest = async (req, res) => {
+  const { rideId, userId } = req.body;
+  const { token } = req.cookies;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const ride = await RideModel.findById(rideId);
+
+  if (!ride) return res.status(404).json({ error: "Ride not found" });
+  if (ride.user.toString() !== decoded.id) {
+    return res.status(403).json({ error: "Unauthorized user" });
+  }
+
+  if (!ride.requests.includes(userId)) {
+    return res.status(400).json({ error: "User has not requested" });
+  }
+
+  ride.requests = ride.requests.filter(r => r.toString() !== userId);
+  ride.passengers.push(userId);
+  ride.openseats -= 1;
+
+  await ride.save();
+  return res.json({ message: "Request approved" });
+};
+
+const DenyRequest = async (req, res) => {
+  const { rideId, userId } = req.body;
+  const { token } = req.cookies;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const ride = await RideModel.findById(rideId);
+
+  if (!ride) return res.status(404).json({ error: "Ride not found" });
+  if (ride.user.toString() !== decoded.id) {
+    return res.status(403).json({ error: "Unauthorized user" });
+  }
+
+  if (!ride.requests.includes(userId)) {
+    return res.status(400).json({ error: "User has not requested" });
+  }
+
+  if (ride.passengers.includes(userId)) {
+    return res.status(400).json({ error: "User is already a passenger" });
+  }
+
+  ride.requests = ride.requests.filter(r => r.toString() !== userId);
+  await ride.save();
+
+  return res.json({ message: "Request denied" });
+};
+
+const MyRequests = async (req, res) => {
+
+  const { userId } = req.body;
+  const { token } = req.cookies;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized. Please login first." });
+  }
+  
+  try{
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  //search all rides that have the user, either as a request or passenger
+  const rides = await RideModel.find({
+      $or: [
+        { requests: userId },
+        { passengers: userId },
+      ]
+    }).populate("name email");
+  
+  if(!rides) return res.json({message: "No rides requested!"})
+
+  const result = rides.map(ride => {
+      let status = "Pending";
+
+      if (ride.passengers.includes(userId)) status = "Approved";
+      else if (!ride.requests.includes(userId)) status = "Denied";
+
+      return {
+        from: ride.from,
+        to: ride.to,
+        date: ride.rideDate,
+        host: ride.user.name,
+        status,
+      };
+    });
+
+    return res.json({ rides: result})
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+
+};
+
 module.exports = {
     test,
     loginUser,
@@ -240,4 +403,10 @@ module.exports = {
     FindRide,
     FindMyRides,
     logoutUser,
+    sendRequest,
+    MyRideRequests,
+    ApproveRequest,
+    DenyRequest,
+    MyRequests,
+
 };

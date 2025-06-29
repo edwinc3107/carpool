@@ -98,7 +98,45 @@ const [data, setData]=useState({
     }
   }
 
-    return(
+  async function handleRequest(e, rideId) {
+    e.preventDefault();
+    try {
+      const response = await axios.put('/request', { rideId });
+
+      if (response.data?.error) {
+        toast.error(response.data.error, {
+          style: {
+            border: "1px solid #84cc16",
+            padding: "16px",
+            color: "#A3E635",
+            background: "#1f2937",
+          },
+          iconTheme: {
+            primary: "#84cc16",
+            secondary: "#F7FEE7",
+          },
+        });
+      } else {
+        toast.success("Request sent!", {
+          style: {
+            border: "1px solid #84cc16",
+            padding: "16px",
+            color: "#A3E635",
+            background: "#1f2937",
+          },
+          iconTheme: {
+            primary: "#84cc16",
+            secondary: "#F7FEE7",
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Request error:", err);
+      toast.error("Could not request! Try again");
+    }
+  }
+
+      return(
         <>
         <Navbar></Navbar>
         <div className="w-full h-full bg-black text-white">
@@ -185,7 +223,7 @@ const [data, setData]=useState({
                         type="submit"
                         className="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-transform transform hover:scale-105"
                     >
-                        FIND!
+                        Find
                     </button>
                     </div>
                 </div>
@@ -244,10 +282,9 @@ const [data, setData]=useState({
                       </div>
                         </div>
                         <div>
-                          <button className="m-20 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 ease-in-out">
+                          <button onClick={(e) => handleRequest(e, ride._id)} className="m-20 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 ease-in-out">
                             Request to join
                           </button>
-
                           </div>
                         </div>
                       </div>

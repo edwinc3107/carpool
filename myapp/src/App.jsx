@@ -24,7 +24,7 @@ function App() {
   return (
     <UserContextProvider>
     < div className="bg-black">
-      <title>Carpool</title>
+      <title>Envo</title>
     <Toaster/>
     <BrowserRouter>
     <Routes>
