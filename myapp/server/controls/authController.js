@@ -300,6 +300,8 @@ const ApproveRequest = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
   }
 
+  try{
+
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
   const ride = await RideModel.findById(rideId);
 
@@ -318,6 +320,10 @@ const ApproveRequest = async (req, res) => {
 
   await ride.save();
   return res.json({ message: "Request approved" });
+}catch(err){
+  console.log(err)
+  return res.json({error: "Server error"})
+}
 };
 
 const DenyRequest = async (req, res) => {
@@ -328,8 +334,11 @@ const DenyRequest = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
   }
 
+  try{
+
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
   const ride = await RideModel.findById(rideId);
+  console.log({ rideId, userId });
 
   if (!ride) return res.status(404).json({ error: "Ride not found" });
   if (ride.user.toString() !== decoded.id) {
@@ -348,6 +357,10 @@ const DenyRequest = async (req, res) => {
   await ride.save();
 
   return res.json({ message: "Request denied" });
+}catch(err){
+  console.log(err)
+  return res.json({error: "Server error"})
+}
 };
 
 const MyRequests = async (req, res) => {
@@ -408,5 +421,4 @@ module.exports = {
     ApproveRequest,
     DenyRequest,
     MyRequests,
-
 };
