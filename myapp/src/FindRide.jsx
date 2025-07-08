@@ -3,9 +3,11 @@ import axios from "axios";
 import { toast } from 'react-hot-toast';
 import Navbar from "./Navbar";
 import { MapPin, CalendarDays, User, Phone, Users } from 'lucide-react';
+import MyRides from "./MyRides";
 
 function FindRide(){
 const [foundRides, setFoundRides] = useState([]);
+const [clicked, setClicked] = useState({})
 const [data, setData]=useState({    
     from: "",
     to: "",
@@ -42,7 +44,6 @@ const [data, setData]=useState({
     }
 
     async function onSubmit(e){
-    
     e.preventDefault();
     const rideinfo = data
 
@@ -98,9 +99,10 @@ const [data, setData]=useState({
     }
   }
 
-  async function handleRequest(e, rideId) {
+  async function handleRequest(e, rideId, from, to) {
     e.preventDefault();
     try {
+
       const response = await axios.put('/request', { rideId });
 
       if (response.data?.error) {
@@ -117,6 +119,10 @@ const [data, setData]=useState({
           },
         });
       } else {
+            setClicked(prev => ({
+                ...prev,
+                [rideId]: true
+              }));
         toast.success("Request sent!", {
           style: {
             border: "1px solid #84cc16",
@@ -156,7 +162,7 @@ const [data, setData]=useState({
                         value={data.from}
                         onChange={handleChange}
                         placeholder="Where are you leaving from?"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -168,7 +174,7 @@ const [data, setData]=useState({
                         value={data.to}
                         onChange={handleChange}
                         placeholder="Where are you going?"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3 bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -179,7 +185,7 @@ const [data, setData]=useState({
                         name="date"
                         value={data.date}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div></div>
                     <fieldset className="border border-white/30 rounded-xl p-5">
@@ -271,7 +277,7 @@ const [data, setData]=useState({
                         <div>
                         <div className="flex gap-50 bg-blue-700 p-10 gap-10 ml-20 mt-10">
                         <div>
-                            <strong className="text-sm">Distance:</strong> <p>{'Value'}</p>
+                            <strong className="text-sm">Distance:</strong> <p>{ride.distance?.toFixed(1)} km</p>
                         </div>
                         <div>
                             <strong className="text-sm">Duration:</strong> <p>{'Value'}</p>
@@ -282,13 +288,22 @@ const [data, setData]=useState({
                       </div>
                         </div>
                         <div>
-                          <button onClick={(e) => handleRequest(e, ride._id)} className="m-20 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-                            Request to join
-                          </button>
+                          <button
+                              disabled={clicked[ride._id]}
+                              onClick={(e) => {
+                                handleRequest(e, ride._id, ride.from, ride.to);
+                              }}
+                              className={`m-20 font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 ease-in-out
+                                ${clicked[ride._id]
+                                  ? 'bg-gray-400 cursor-not-allowed'
+                                  : 'bg-lime-500 hover:bg-lime-600 text-white hover:shadow-lg'}
+                              `}
+                            >
+                              {clicked[ride._id] ? <p>Requested</p> : <p>Request to join</p>}
+                            </button>
                           </div>
                         </div>
                       </div>
-
                       </div>
                   ))}
                 </div>
@@ -296,7 +311,12 @@ const [data, setData]=useState({
          </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
-            Our Mission : to make long-distance travel more efficient, affordable, and human. 
+            Our Mission : to make long-distance travel more efficient, affordable, and human.
+            </div>
+        </div>
+        <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
+            <div>
+           <MyRides typeOfRide="Ride" />
             </div>
         </div>
         <div className="text-2xl font-semibold m-40">

@@ -2,8 +2,17 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from 'react-hot-toast';
 import Navbar from "./Navbar";
+import {CitySelect, CountrySelect, StateSelect } from "react-country-state-city";
+import "react-country-state-city/dist/react-country-state-city.css";
+import MyRides from "./MyRides";
 
 function HostRide(){
+
+const [fromCity, setFromCity] = useState(null);
+const [toCity, setToCity] = useState(null);
+const [country, setCountry] = useState(null);
+const [currentState, setCurrentState] = useState(null);
+const [currentCity, setCurrentCity] = useState(null);
 
 const [data, setData]=useState({    
     from: "",
@@ -43,7 +52,6 @@ const [data, setData]=useState({
     async function onSubmit(e){
     
     e.preventDefault();
-
     const rideinfo = data
 
     try {
@@ -80,6 +88,7 @@ const [data, setData]=useState({
                 from: "",
                 to: "",
                 date: "",
+                distance:0,
                 openseats: 1,
                 phone: "",
                 message: "",
@@ -115,8 +124,25 @@ const [data, setData]=useState({
                         value={data.from}
                         onChange={handleChange}
                         placeholder="Where are you leaving from?"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
+                        <div>
+                            {/* Country Selection */}
+                            ...
+                            
+                            {/* State Selection */}
+                            ...
+                            
+                            {/* City Selection */}
+                            <h6>City</h6>
+                            <CitySelect
+                              countryid={country?.id}
+                              stateid={currentState?.id}
+                              onChange={(_city) => setCurrentCity(_city)}
+                              defaultValue={currentCity}
+                              placeHolder="Select City"
+                            />
+                          </div>
                     </div>
 
                     <div>
@@ -127,7 +153,7 @@ const [data, setData]=useState({
                         value={data.to}
                         onChange={handleChange}
                         placeholder="Where are you going?"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -138,7 +164,7 @@ const [data, setData]=useState({
                         name="date"
                         value={data.date}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -151,7 +177,7 @@ const [data, setData]=useState({
                         min="1"
                         max="10"
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -163,7 +189,7 @@ const [data, setData]=useState({
                         value={data.phone}
                         onChange={handleChange}
                         placeholder="123-456-7890"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
                     />
                     </div>
 
@@ -175,7 +201,7 @@ const [data, setData]=useState({
                         value={data.message}
                         onChange={handleChange}
                         placeholder="For example: Bring snacks, good vibes only!"
-                        className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition resize-none"
+                        className="w-full px-4 py-3 bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition resize-none"
                     />
                     </div>
 
@@ -227,9 +253,17 @@ const [data, setData]=useState({
                 </form>
 
         </div>
+        <div>
+
+        </div>
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
             Our Mission : to make long-distance travel more efficient, affordable, and human. 
+            </div>
+        </div>
+        <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
+            <div>
+           <MyRides typeOfRide="Host" />
             </div>
         </div>
         <div className="text-2xl font-semibold m-40">

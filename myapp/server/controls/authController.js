@@ -9,6 +9,16 @@ function test(req, res) {
     res.json({ message: "Test route working" });
 }
 
+const Testing = async(req, res) => {
+  try {
+    const coords = await getCoords("New York");
+    res.json(coords);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch coords" });
+  }
+};
+
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -94,8 +104,50 @@ const getProfile = async(req, res) =>{
     res.status(403).json({ error: "Token invalid or expired" });
   }
 };
+
+  function toRadians(deg) {
+  return deg * Math.PI / 180;
+    }
+
+  async function getCoords(place) {
+  const apiKey = '6b6ea9be10c57dbca77e8c8a90ff1dca';
+  const url = new URL('https://api.openweathermap.org/geo/1.0/direct');
+  url.search = new URLSearchParams({
+    q: place,
+    limit: '1',     // get the top result
+    appid: apiKey
+  });
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
+  const data = await res.json();
+
+    if (!data.length) {
+      throw new Error(`No results for "${place}"`);
+    }
+
+    const { lat, lon } = data[0];
+    return { lat, lon };
+  }
+
+
+  function haversineDistance(lat1, lon1, lat2, lon2, R = 6371) {
+    const Δφ = toRadians(lat2 - lat1);
+    const Δλ = toRadians(lon2 - lon1);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+
+    const x = Math.sin(Δφ/2)**2 +
+              Math.cos(φ1)*Math.cos(φ2) *
+              Math.sin(Δλ/2)**2;
+    const y = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+
+    return R * y; // distance in kilometers
+    }
+
+
 const HostRide = async (req, res) => {
   const { token } = req.cookies;
+
   if (!token) {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
   }
@@ -110,12 +162,22 @@ const HostRide = async (req, res) => {
       return res.status(400).json({ error: "Please enter all fields!" });
     }
     const rideMessage = message || `Ride from ${from} to ${to}. Seats available: ${openseats}.`;
+    console.log({from, to})
+
+    //distance calculation:-
+
+    const coords_from = await getCoords(from)
+    const coords_to = await getCoords(to)
+    const distance = haversineDistance(coords_from.lat, coords_from.lon, coords_to.lat, coords_to.lon, R = 6371)
+
+    console.log(distance);
 
     const createRide = await RideModel.create({
       user: userId,
       from,
       to,
       rideDate: date,
+      distance: distance,
       openseats,
       phone,
       message: rideMessage,
@@ -248,6 +310,26 @@ const sendRequest = async (req, res) => {
     if(ride.requests.includes(userId) || ride.passengers.includes(userId)){
       return res.status(400).json({error: "Already requested or joined!"})
     }
+
+    //case: user can't ride two rides on the same day
+    const rides = await RideModel.find();
+
+    const date = new Date(ride.rideDate);
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    const conflictingRides = await RideModel.find({
+        $or: [
+          { passengers: userId },
+          { requests: userId }
+        ],
+        rideDate: { $gte: startOfDay, $lte: endOfDay }
+      });
+
+    
+    if (conflictingRides.length > 0) {
+          return res.status(400).json({ error: " Already have a ride or request on this day." });
+        }
 
     ride.requests.push(userId);
     await ride.save(); //saves new document updates
@@ -407,6 +489,80 @@ const MyRequests = async (req, res) => {
 
 };
 
+const MyDashboardRides = async (req, res) => {
+  const { token } = req.cookies;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const ridesHosting = await RideModel.find({ user: userId }).populate('requests passengers', 'name email');
+    const ridesRequested = await RideModel.find({ requests: userId }).populate('user', 'name email');
+    const ridesPassenger = await RideModel.find({ passengers: userId }).populate('user', 'name email');
+
+    res.json({ ridesHosting, ridesRequested, ridesPassenger });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const ChatMembers = async(req,res) => {
+  const { token } = req.cookies;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const rides = await RideModel.find({ user: userId }).populate('requests passengers', 'name email');
+
+    res.json({ rides });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const HostedRides= async(req,res) => {
+  const { token } = req.cookies;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const rides = await RideModel.find({ user: userId }).populate('passengers', 'name email');
+
+    res.json({ rides });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const getMyRides = async (req, res) => {
+  const { token } = req.cookies;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const rides = await RideModel.find({
+      $or: [
+        { user: userId },
+        { passengers: userId }
+      ]
+    })
+    .populate('passengers', 'name email')
+    .populate('user', 'name email'); // ⬅️ populate host too
+
+    res.json({ rides });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
     test,
     loginUser,
@@ -421,4 +577,9 @@ module.exports = {
     ApproveRequest,
     DenyRequest,
     MyRequests,
+    MyDashboardRides,
+    Testing,
+    ChatMembers,
+    HostedRides,
+    getMyRides,
 };

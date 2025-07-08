@@ -4,8 +4,9 @@ const HostSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   from: { type: String, required: true },
   to: { type: String, required: true },
+  distance:{type: Number},
   rideDate: { type: Date, required: true },
-  openseats: { type: Number, min: 0, required: true },
+  openseats: { type: Number, min: [0, 'Open seats cannot be negative'], required: true },
   message: {
     type: String,
     default: function () {
@@ -21,6 +22,7 @@ const HostSchema = new mongoose.Schema({
 
   passengers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  ChatRoom: {type:Boolean, default: false}
   
 }, { timestamps: true });
 

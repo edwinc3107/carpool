@@ -21,6 +21,7 @@
     "particles.js": "^2.0.0",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",
+    "react-country-state-city": "^1.1.12",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^7.6.2",

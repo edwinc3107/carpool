@@ -117,15 +117,47 @@ function Dashboard(){
         });
     }, []);
 
+    useEffect(() => {
+      axios.get('/mydashboardrides')
+        .then(res => {
+          if (res.data.ridesHosting === 0) {
+            console.log("No host");
+          }else{
+            //declare a state variable and lplug in value there??
+          }
+          if (res.data.ridesRequested  === 0) {
+            console.log("No requests sent");
+          }
+          if (res.data.ridesPassenger  === 0) {
+            console.log("No join-requests sent");
+          }
+
+        })
+        .catch(err => {
+          console.error("Failed to fetch ride requests:", err);
+        });
+    }, []);
     const handleRequest = async (rideId, userId, action) => {
         try {
           const endpoint = action === 'approve' ? '/approve-request' : '/deny-request';
           const res = await axios.put(endpoint, { rideId, userId });
 
           // Refresh request list after action
-          setPendingRequests(prev =>
-            prev.filter(r => !(r.id === rideId && r.requests[0].id === userId))
-          );
+          setPendingRequests(prevRequests => {
+          const updatedRequests = prevRequests
+                .map(ride => {
+                  if (ride.rideId !== rideId) return ride;
+
+                  const remainingRequests = ride.requests.filter(r => r.id !== userId);
+                  console.log(`Updating ride ${ride.rideId}, remaining:`, remainingRequests);
+
+                  return { ...ride, requests: remainingRequests };
+                })
+                .filter(ride => ride.requests.length > 0);
+
+              return updatedRequests;
+            });
+
           toast.success(`${action === 'approve' ? "Approved" : "Denied"}`, {
           style: {
             border: "1px solid #84cc16",
