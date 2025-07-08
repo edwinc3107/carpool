@@ -15,6 +15,7 @@ import { UserContextProvider } from './context/UserContext'
 import Dashboard from './Dashboard'
 import HostRide from './HostRide'
 import FindRide from './FindRide'
+import ChatRoom from './ChatRoom'
 
 axios.defaults.baseURL= "http://localhost:4000"
 axios.defaults.withCredentials = true
@@ -35,6 +36,7 @@ function App() {
       <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
       <Route path='/hostride' element={<HostRide></HostRide>}></Route>
       <Route path='/findride' element={<FindRide></FindRide>}></Route>
+      <Route path='/chat' element={<ChatRoom></ChatRoom>}></Route>
     </Routes>
     </BrowserRouter>
     </div>
