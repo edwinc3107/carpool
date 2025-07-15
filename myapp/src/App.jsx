@@ -36,7 +36,8 @@ function App() {
       <Route path='/dashboard' element={<Dashboard></Dashboard>}></Route>
       <Route path='/hostride' element={<HostRide></HostRide>}></Route>
       <Route path='/findride' element={<FindRide></FindRide>}></Route>
-      <Route path='/chat' element={<ChatRoom></ChatRoom>}></Route>
+      <Route path='/chat/:rideId' element={<ChatRoom></ChatRoom>}></Route>
+      <Route path="/chat" element={<ChatRoom />} />
     </Routes>
     </BrowserRouter>
     </div>

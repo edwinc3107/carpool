@@ -22,7 +22,8 @@ const HostSchema = new mongoose.Schema({
 
   passengers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  ChatRoom: {type:Boolean, default: false}
+  ChatRoom: {type:Boolean, default: false},
+  chatRoomId: {type: String}
   
 }, { timestamps: true });
 

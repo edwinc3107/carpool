@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "./context/UserContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-hot-toast';
 
 
 function MyRides({typeOfRide}) {
@@ -37,8 +38,44 @@ useEffect(() => {
 
   if (user) fetchRides();
 }, [user]);
+async function createChatRoom(rideId) {
+  try {
+    console.log("Creating chat for ride ID:", rideId);
+    const response = await axios.post('/chat/create', { rideId });  // use rideId param here
 
-
+    if (response.data?.error) {
+      toast.error(response.data.error, {
+        style: {
+          border: "1px solid #84cc16",
+          padding: "16px",
+          color: "#A3E635",
+          background: "#1f2937",
+        },
+        iconTheme: {
+          primary: "#84cc16",
+          secondary: "#F7FEE7",
+        },
+      });
+    } else {
+      toast.success("Chat room created!", {
+        style: {
+          border: "1px solid #84cc16",
+          padding: "16px",
+          color: "#A3E635",
+          background: "#1f2937",
+        },
+        iconTheme: {
+          primary: "#84cc16",
+          secondary: "#F7FEE7",
+        },
+      });
+      navigate(`/chat/${rideId}`);
+    }
+  } catch (err) {
+    console.error("Hosting error:", err);
+    toast.error("Could not host ride. Please try again later.");
+  }
+}
   if (loading) return <p className="font-semibold text-5xl flex justify-center font-sans text-lime-400">Loading your rides...</p>;
   if (error) return <p className="text-red-500 text-center mt-10">{error}</p>;
 

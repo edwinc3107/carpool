@@ -3,6 +3,8 @@ const UserModel = require("../models/Users")
 const jwt = require('jsonwebtoken')
 const cookie = require('cookie-parser')
 const RideModel = require('../models/Rides')
+const ChatRoomModel = require('../models/ChatRoom')
+const MessageModel = require('../models/Message')
 
 function test(req, res) {
     console.log("Test function!");
@@ -382,31 +384,51 @@ const ApproveRequest = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
   }
 
-  try{
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const ride = await RideModel.findById(rideId);
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const ride = await RideModel.findById(rideId);
+    if (!ride) return res.status(404).json({ error: "Ride not found" });
 
-  if (!ride) return res.status(404).json({ error: "Ride not found" });
-  if (ride.user.toString() !== decoded.id) {
-    return res.status(403).json({ error: "Unauthorized user" });
+    if (ride.user.toString() !== decoded.id) {
+      return res.status(403).json({ error: "Unauthorized user" });
+    }
+
+    if (!ride.requests.includes(userId)) {
+      return res.status(400).json({ error: "User has not requested" });
+    }
+
+    if (ride.passengers.includes(userId)) {
+      return res.status(400).json({ error: "User is already a passenger" });
+    }
+
+    if (ride.openseats === 0) {
+      return res.json({ message: "No open seats" });
+    }
+
+    // Approve request
+    ride.requests = ride.requests.filter(r => r.toString() !== userId);
+    ride.passengers.push(userId);
+    ride.openseats -= 1;
+
+    // Add to chat room
+    const chatRoom = await ChatRoomModel.findOne({ ride: rideId });
+    if (chatRoom) {
+      if (!chatRoom.participants.map(p => p.toString()).includes(userId)) {
+        chatRoom.participants.push(userId);
+        await chatRoom.save();
+      }
+    }
+
+    await ride.save();
+    return res.json({ message: "Request approved" });
+
+  } catch (err) {
+    console.error("ApproveRequest error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
-
-  if (!ride.requests.includes(userId)) {
-    return res.status(400).json({ error: "User has not requested" });
-  }
-
-  ride.requests = ride.requests.filter(r => r.toString() !== userId);
-  ride.passengers.push(userId);
-  ride.openseats -= 1;
-
-  await ride.save();
-  return res.json({ message: "Request approved" });
-}catch(err){
-  console.log(err)
-  return res.json({error: "Server error"})
-}
 };
+
 
 const DenyRequest = async (req, res) => {
   const { rideId, userId } = req.body;
@@ -562,6 +584,91 @@ const getMyRides = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+const createChatRoom = async (req, res) => {
+  const { rideId } = req.body;
+  console.log("Received rideId for chat creation:", rideId);
+  const { token } = req.cookies;
+
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const ride = await RideModel.findById(rideId);
+    if (!ride) return res.status(404).json({ error: "Ride not found" });
+
+    if (ride.chatCreated) {
+      return res.status(400).json({ error: "Chat room already created" });
+    }
+
+    if (ride.user.toString() !== userId) {
+      return res.status(403).json({ error: "Only the host can create the chatroom" });
+    }
+
+    const chat = await ChatRoomModel.create({
+      ride: rideId,
+      participants: [ride.user, ...ride.passengers],
+    });
+
+    ride.chatCreated = true;
+    await ride.save();
+
+    if (!chat) return res.json({ message: "Unable to create chatroom! Try again." });
+
+    res.json({ message: "Created chatroom!" });
+  } catch (err) {
+    console.error("Chat room creation failed:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const myChatRooms = async (req, res) => {
+  const { token } = req.cookies;
+
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    // Find all chat rooms where the user is a participant
+    const chatRooms = await ChatRoomModel.find({ participants: userId })
+      .populate({
+        path: "ride",
+        populate: [
+          { path: "user", select: "name email" },
+          { path: "passengers", select: "name email" },
+        ],
+      });
+    if (!chatRooms || chatRooms.length === 0) {
+      return res.status(404).json({ message: "No chats found" });
+    }
+    return res.status(200).json({ message: "Chats fetched", chatRooms });
+  } catch (err) {
+    console.error("Fetching chat rooms failed:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+const myMessages = async (req, res) => {
+  const { token } = req.cookies;
+  const { chatRoomId } = req.params;
+
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const messages = await MessageModel.find({ chatRoom: chatRoomId })
+    .populate("sender", "name") 
+    .sort({ timestamp: 1 });
+    return res.json({ messages });
+  } catch (err) {
+    console.error("Fetching messaages failed:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
 
 module.exports = {
     test,
@@ -582,4 +689,7 @@ module.exports = {
     ChatMembers,
     HostedRides,
     getMyRides,
+    createChatRoom,
+    myChatRooms,
+    myMessages,
 };

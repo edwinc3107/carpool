@@ -3,7 +3,8 @@ const router = express.Router();
 
 const { test, Testing, loginUser, registerUser, getProfile, HostRide, FindRide, FindMyRides, logoutUser, sendRequest, MyRideRequests, ApproveRequest, DenyRequest, 
         MyRequests, MyDashboardRides, ChatMembers, HostedRides,
-        getMyRides} = require('../controls/authController');
+        getMyRides, createChatRoom, myChatRooms,
+        myMessages} = require('../controls/authController');
 
 // Router methods: GET, POST, PUT, DELETE
 router.get('/', test);
@@ -18,9 +19,12 @@ router.get('/findmyrequest',MyRideRequests);
 router.put('/approve-request', ApproveRequest);
 router.put('/deny-request', DenyRequest);
 router.get('/myrequests', MyRequests)
-router.get('mydashboardrides',MyDashboardRides)
+router.get('/mydashboardrides',MyDashboardRides)
 router.get('/test/coords', Testing)
 router.get('/ride-members', ChatMembers)
 router.get('/myhostedrides', HostedRides)
 router.get('/myrides', getMyRides)
+router.post('/chat/create', createChatRoom);
+router.get('/mychats',myChatRooms);
+router.get('/mychats/:chatRoomId',myMessages);
 module.exports = router;
