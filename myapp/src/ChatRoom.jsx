@@ -1,6 +1,6 @@
 import Navbar from "./Navbar";
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "./context/UserContext";
 import socket from "./socket";
 
@@ -10,7 +10,8 @@ function ChatRoom() {
   const [selectedRideId, setSelectedRideId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-
+  const bottomRef = useRef(null);
+  const shouldAutoScrollRef = useRef(false);
   // Join room when ride is selected
   useEffect(() => {
     if (selectedRideId) {
@@ -25,8 +26,8 @@ function ChatRoom() {
 
   // Listen for incoming real-time messages
   useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessages((prev) => [...prev, data]);
+      socket.on("receive_message", (data) => {
+  setMessages((prev) => [...prev, { ...data, createdAt: new Date() }]);
     });
 
     return () => socket.off("receive_message");
@@ -39,6 +40,7 @@ function ChatRoom() {
       try {
         const res = await axios.get(`/mychats/${selectedRideId}`);
         setMessages(res.data.messages);
+        console.log("Fetched messages:", res.data.messages);
       } catch (err) {
         console.error("Error fetching messages:", err);
       }
@@ -65,14 +67,23 @@ function ChatRoom() {
   const handleSendMessage = () => {
     if (!text.trim() || !selectedRideId || !user) return;
 
+      shouldAutoScrollRef.current = true;
+
     socket.emit("send_message", {
       roomId: selectedRideId,
       message: text,
       sender: user, // ideally just user._id
     });
-
     setText("");
   };
+
+  useEffect(() => {
+    if (shouldAutoScrollRef.current) {
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+    shouldAutoScrollRef.current = false;}
+  }, [messages]);
 
   return (
     <div className="w-full h-full bg-black from-gray-900 to-gray-700 text-lime-400">
@@ -105,7 +116,7 @@ function ChatRoom() {
           </div>
 
           {/* Main Chat Window */}
-          <div className="col-span-8 flex flex-col">
+          <div className="col-span-8 flex flex-col overflow-y-auto  max-h-[900px]">
             <h3 className="text-4xl mb-4">
               Connect - with <br /> your fellow travellers!
             </h3>
@@ -118,7 +129,9 @@ function ChatRoom() {
                       <p className="font-bold">{msg.sender?.name || "Anonymous"}:</p>
                       <p>{msg.message}</p>
                       <p className="text-xs text-gray-400">
-                        {new Date(msg.createdAt).toLocaleTimeString()}
+                          {msg.createdAt
+                            ? new Date(msg.createdAt).toLocaleTimeString()
+                            : new Date().toLocaleTimeString()}
                       </p>
                     </div>
                   ))
@@ -128,6 +141,7 @@ function ChatRoom() {
               ) : (
                 <p className="text-xl">Select a ride to view messages</p>
               )}
+              <div ref={bottomRef} />
             </div>
 
             {/* Input + Send Button */}
@@ -138,6 +152,12 @@ function ChatRoom() {
                   className="flex-1 p-2 rounded border border-white text-black"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();  // optional: prevent newline
+                      handleSendMessage();
+                    }
+                  }}
                 />
                 <button
                   className="bg-lime-500 text-black p-2 rounded"

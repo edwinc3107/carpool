@@ -660,7 +660,7 @@ const myMessages = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const messages = await MessageModel.find({ chatRoom: chatRoomId })
+    const messages = await MessageModel.find({ ride: chatRoomId })
     .populate("sender", "name") 
     .sort({ timestamp: 1 });
     return res.json({ messages });
