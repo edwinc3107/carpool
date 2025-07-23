@@ -94,7 +94,7 @@ function ChatRoom() {
           <div className="col-span-4 p-3">
             <h2 className="text-5xl font-bold m-4">Chats</h2>
             <div className="h-100 overflow-y-auto space-y-2 pr-2">
-              {chats.length > 0 ? (
+                            {chats.length > 0 ? (
                 chats.map((chat) => (
                   <div
                     key={chat._id}
@@ -103,15 +103,24 @@ function ChatRoom() {
                       selectedRideId === chat._id ? "bg-lime-700" : "bg-gray-800"
                     }`}
                   >
-                    <h3 className="font-semibold">{chat.ride.from} ➡ {chat.ride.to}</h3>
-                    <p className="text-sm text-gray-300">
-                      {new Date(chat.ride.rideDate).toLocaleDateString()}
-                    </p>
+                    {chat.ride ? (
+                      <>
+                        <h3 className="font-semibold">
+                          {chat.ride.from} ➡ {chat.ride.to}
+                        </h3>
+                        <p className="text-sm text-gray-300">
+                          {new Date(chat.ride.rideDate).toLocaleDateString()}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-black text-sm">Ride info not available</p>
+                    )}
                   </div>
                 ))
               ) : (
                 <p>No chats yet!</p>
               )}
+
             </div>
           </div>
 

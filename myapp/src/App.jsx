@@ -16,6 +16,8 @@ import Dashboard from './Dashboard'
 import HostRide from './HostRide'
 import FindRide from './FindRide'
 import ChatRoom from './ChatRoom'
+// In App.jsx or wherever you define routes
+import MapTest from "./test";
 
 axios.defaults.baseURL= "http://localhost:4000"
 axios.defaults.withCredentials = true
@@ -38,6 +40,7 @@ function App() {
       <Route path='/findride' element={<FindRide></FindRide>}></Route>
       <Route path='/chat/:rideId' element={<ChatRoom></ChatRoom>}></Route>
       <Route path="/chat" element={<ChatRoom />} />
+      <Route path="/maptest" element={<MapTest />} />
     </Routes>
     </BrowserRouter>
     </div>

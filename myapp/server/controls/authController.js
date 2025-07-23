@@ -120,6 +120,7 @@ const getProfile = async(req, res) =>{
     appid: apiKey
   });
 
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
   const data = await res.json();
@@ -129,7 +130,7 @@ const getProfile = async(req, res) =>{
     }
 
     const { lat, lon } = data[0];
-    return { lat, lon };
+    return { lat, lng: lon };
   }
 
 
@@ -146,9 +147,9 @@ const getProfile = async(req, res) =>{
     return R * y; // distance in kilometers
     }
 
-
 const HostRide = async (req, res) => {
   const { token } = req.cookies;
+  console.log("Received body:", req.body);
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
@@ -158,32 +159,85 @@ const HostRide = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    const { from, to, date, openseats, phone, message, preferences } = req.body;
+    const { from, to, date, openseats, phone, message, preferences, intermediateStops } = req.body;
 
+    // Validate required fields
     if (!from || !to || !date || !openseats || !phone || !preferences) {
       return res.status(400).json({ error: "Please enter all fields!" });
     }
+
     const rideMessage = message || `Ride from ${from} to ${to}. Seats available: ${openseats}.`;
-    console.log({from, to})
 
-    //distance calculation:-
+    // Get coordinates for origin and destination
+    const coords_from = await getCoords(from);
+    const coords_to = await getCoords(to);
 
-    const coords_from = await getCoords(from)
-    const coords_to = await getCoords(to)
-    const distance = haversineDistance(coords_from.lat, coords_from.lon, coords_to.lat, coords_to.lon, R = 6371)
+    // Validate geocoding response
+    if (
+      !coords_from || !coords_to ||
+      isNaN(coords_from.lat) || isNaN(coords_from.lng) ||
+      isNaN(coords_to.lat) || isNaN(coords_to.lng)
+    ) {
+      console.error("Invalid coordinates returned:", { coords_from, coords_to });
+      return res.status(500).json({ error: "Geocoding failed for from/to locations." });
+    }
 
-    console.log(distance);
+    // Geocode intermediate stops with validation
+    const stopsWithCoords = await Promise.all(
+      intermediateStops.map(async (stop) => {
+        const coords = await getCoords(stop.address);
+        if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) {
+          throw new Error(`Invalid intermediate stop: ${stop.address}`);
+        }
+        return {
+          address: stop.address,
+          lat: coords.lat,
+          lng: coords.lng,
+        };
+      })
+    );
 
+    // Build route: from → intermediateStops → to
+    const routePoints = [
+      { lat: coords_from.lat, lng: coords_from.lng },
+      ...stopsWithCoords,
+      { lat: coords_to.lat, lng: coords_to.lng },
+    ];
+
+    // Calculate total distance with Haversine
+    let totalDistance = 0;
+    for (let i = 0; i < routePoints.length - 1; i++) {
+      const a = routePoints[i];
+      const b = routePoints[i + 1];
+      totalDistance += haversineDistance(a.lat, a.lng, b.lat, b.lng);
+    }
+
+    // Validate final distance
+    if (isNaN(totalDistance)) {
+      console.error("Distance calculation failed:", routePoints);
+      return res.status(500).json({ error: "Failed to calculate route distance." });
+    }
+
+    // Save to DB
     const createRide = await RideModel.create({
       user: userId,
       from,
       to,
       rideDate: date,
-      distance: distance,
+      distance: totalDistance,
       openseats,
       phone,
       message: rideMessage,
       preferences,
+      intermediateStops: stopsWithCoords,
+      fromCoords: {
+        lat: coords_from.lat,
+        lng: coords_from.lng,
+      },
+      toCoords: {
+        lat: coords_to.lat,
+        lng: coords_to.lng,
+      }
     });
 
     return res.status(201).json({
@@ -197,6 +251,9 @@ const HostRide = async (req, res) => {
         phone: createRide.phone,
         message: createRide.message,
         preferences: createRide.preferences,
+        fromCoords: createRide.fromCoords,
+        toCoords:createRide.toCoords,
+        intermediateStops: createRide.intermediateStops,
       },
     });
   } catch (err) {
@@ -204,6 +261,7 @@ const HostRide = async (req, res) => {
     return res.status(500).json({ error: "Server error. Try again later." });
   }
 };
+
 
 const FindRide = async (req, res) => {
     const { token } = req.cookies;

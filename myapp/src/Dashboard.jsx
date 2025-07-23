@@ -6,97 +6,40 @@ import FindRide from "./FindRide";
 import HostRide from "./HostRide";
 import { toast } from 'react-hot-toast';
 import axios from "axios";
+import Widget from "./assets/Widget";
+import Map from "./Map";
+import HostCard from "./assets/HostCard";
 
 function Dashboard(){
     const { user } = useContext(UserContext);
     const [pendingRequests, setPendingRequests] = useState([]);
-    const features = [
-  {
-    title: "Smart Routes",
-    features: "Matches riders with hosts going the same way, even with intermediate stops.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain-icon lucide-brain">
-        <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
-        <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
-        <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
-        <path d="M17.599 6.5a3 3 0 0 0 .399-1.375" />
-        <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5" />
-        <path d="M3.477 10.896a4 4 0 0 1 .585-.396" />
-        <path d="M19.938 10.5a4 4 0 0 1 .585.396" />
-        <path d="M6 18a4 4 0 0 1-1.967-.516" />
-        <path d="M19.967 17.484A4 4 0 0 1 18 18" />
-      </svg>
-    )
-  },
-  {
-    title: "Sustainability Board",
-    features: "Track CO₂ saved, fuel reduced, and your eco-impact from shared rides.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-recycle-icon lucide-recycle">
-        <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
-        <path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12" />
-        <path d="m14 16-3 3 3 3" />
-        <path d="M8.293 13.596 7.196 9.5 3.1 10.598" />
-        <path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843" />
-        <path d="m13.378 9.633 4.096 1.098 1.097-4.096" />
-      </svg>
-    )
-  },
-  {
-    title: "Flexible Ride Hosting",
-    features: "Create and manage your rides, choose your stops, and communicate easily.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-plus-icon lucide-map-plus">
-        <path d="m11 19-1.106-.552a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0l4.212 2.106a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619V12" />
-        <path d="M15 5.764V12" />
-        <path d="M18 15v6" />
-        <path d="M21 18h-6" />
-        <path d="M9 3.236v15" />
-      </svg>
-    )
-  },
-  {
-    title: "Ride Alerts",
-    features: "Get notified instantly when a ride is available or someone joins your route.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-siren-icon lucide-siren">
-        <path d="M7 18v-6a5 5 0 1 1 10 0v6" />
-        <path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z" />
-        <path d="M21 12h1" />
-        <path d="M18.5 4.5 18 5" />
-        <path d="M2 12h1" />
-        <path d="M12 2v1" />
-        <path d="m4.929 4.929.707.707" />
-        <path d="M12 12v6" />
-      </svg>
-    )
-  },
-  {
-    title: "Route Planner",
-    features: "Visualize your trip, stops, and passengers using a smart map UI.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-waypoints-icon lucide-waypoints">
-        <circle cx="12" cy="4.5" r="2.5" />
-        <path d="m10.2 6.3-3.9 3.9" />
-        <circle cx="4.5" cy="12" r="2.5" />
-        <path d="M7 12h10" />
-        <circle cx="19.5" cy="12" r="2.5" />
-        <path d="m13.8 17.7 3.9-3.9" />
-        <circle cx="12" cy="19.5" r="2.5" />
-      </svg>
-    )
-  },
-  {
-    title: "Travel Analytics",
-    features: "Review your ride history and analyze cost savings, distances, and trip stats.",
-    link: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="gray" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chart-pie-icon lucide-chart-pie">
-        <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z" />
-        <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-      </svg>
-    )
-  },
-];
+    const [hosted, setHosted] = useState([])
+    const widgets =[
+      {
+        title: "Fuel",
+        value: '--',
+        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
+</svg>
+) 
+      },
+            {
+        title: "Distance travelled",
+        value: '--',
+        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
+</svg>
+) 
+      },
+            {
+        title: "CO2 emissions",
+        value: '--',
+        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
+</svg>
+) 
+      },
+    ];
 
 
     useEffect(() => {
@@ -186,27 +129,55 @@ function Dashboard(){
         }
       };
 
+useEffect(() => {
+  axios.get('/myhostedrides')
+    .then(res => {
+      if (res.data && res.data.rides && res.data.rides.length > 0) {
+        let fetchedRides = res.data.rides;
+
+        const sortedRides = [...fetchedRides].sort((a, b) => {
+          const dateA = new Date(a.rideDate);
+          const dateB = new Date(b.rideDate);
+          return dateA.getTime() - dateB.getTime(); // Compares timestamps
+        });
+
+        const now = new Date();
+        const fortyEightHoursLater = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // Current time + 48 hours in milliseconds
+
+        const upcomingHostedRides = sortedRides.filter(ride => {
+          const rideDateTime = new Date(ride.rideDate);
+          // Check if the ride date is in the future AND within the next 48 hours
+          return rideDateTime >= now && rideDateTime <= fortyEightHoursLater;
+        });
+        setHosted(upcomingHostedRides); // Update state with the processed rides
+        console.log("Upcoming Hosted rides (next 48h):", upcomingHostedRides);
+      } else {
+        console.log("No hosted rides found.");
+        setHosted([]); //set as empty
+      }
+    })
+    .catch(err => {
+      console.error("Failed to fetch hosted rides:", err);
+      toast.error("Failed to fetch your hosted rides.");
+    });
+}, []);
+
 
     return(
         <>
         <Navbar></Navbar>
 
         <div className="w-full h-full bg-gradient-to-br from-gray-900 to-gray-700 text-white">
-        <div className="pt-38 px-20">
+        <div className="pt-28 px-20">
         <h1 className="text-3xl font-semibold">
-           {user ? `Welcome, to your portal, ${user.name}!` : "Loading your portal..."}
+           {user ? `${user.name}'s Dashboard` : "Loading your portal..."}
         </h1></div>
-        <div className=" py-60 font-semibold text-5xl flex justify-center font-sans text-lime-400">
-            Whether you have a ride or looking for a ride, <br></br>it all starts here.
+          <div className="flex justify-center gap-10 m-20 p-30">
+         {widgets.map((widget, index) => (
+                <Widget key={index} title={widget.title} value={widget.value} logo={widget.logo} />
+            ))}
         </div>
-                    <h2 className="text-2xl font-semibold px-20 pt-10"> Features: </h2>
-        <div className="py-15 grid-rows-3 flex justify-between px-30">
-            <div className="flex flex-wrap justify-center gap-6 px-10 py-10">
-              {features.map((feature, index) => (
-              <Card  key={index} title={feature.title} feature={feature.features} link={feature.link} />
-              ))}
-            </div>
-        </div>
+                   
             <div className="flex flex-wrap gap-10 justify-center py-10">
               {pendingRequests.map((p, index) => (
                 <Card key={index} Title={"Request"} feature={
@@ -235,6 +206,45 @@ function Dashboard(){
                 {pendingRequests.length === 0 && (
                   <div className="text-white text-xl font-semibold">No ride requests!</div>
                 )}
+            </div>
+            <div>
+                <h1>Upcoming rides:</h1>
+                <div className="flex flex-wrap gap-10 justify-center">
+                {hosted.length > 0 ? (
+                hosted.map((host, index) => (
+                <HostCard
+                  key={index}
+                  Title={host.user?.name || "Unknown Host"} // ✅ Fix: pass a string, not the user object
+                  passenger={host.passengers}
+                  feature={
+                    <div className="flex-col overflow-y-auto">
+                      {console.log(host)}
+                      <p className="text-black">
+                        Destination: <span className="font-medium">{host.to}</span>
+                      </p>
+                      <p className="text-black">
+                        Date: <span className="font-medium">{new Date(host.rideDate).toLocaleDateString()}</span>
+                      </p>
+                      <p className="text-black">
+                        Passengers: <span className="font-medium">{host.passengers}</span>
+                      </p>
+                      <div className="bg-red">
+                        <Map
+                          fromCoords={host.fromCoords}
+                          toCoords={host.toCoords}
+                          intermediateStops={host.intermediateStops}
+                        />
+                      </div>
+                    </div>
+                  }
+                />
+
+                ))
+              ) : (
+                <div className="text-gray-300 text-xl font-semibold">No hosted rides yet!</div>
+              )}
+                </div>
+
             </div>
 
             <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
