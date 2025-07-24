@@ -178,6 +178,10 @@ function Landing() {
           <Card title={"Josh"} feature ={"Slay queen."}>
           </Card>
         </div>
+        <div className="text-gray-400 pl-90 text-italic">
+          "I always aim to put our customers first and solve problems I've lived through. <br></br> Experience is king."
+          <br></br> - Edwin, CEO & Founder
+        </div>
       </section>
 
       {/* CTA Section */}

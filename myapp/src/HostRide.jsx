@@ -77,6 +77,7 @@ function HostRide() {
           },
         });
         setRideDetails(response.data.rideDetails); // NEW: set map data
+
       }
     } catch (err) {
       console.error("Hosting error:", err);
@@ -233,6 +234,12 @@ function HostRide() {
             </div>
           </form>
         </div>
+
+                {rideDetails && (
+          <div className="mt-10">
+            <RouteMap ride={rideDetails} />
+          </div>
+        )}
 
         <div className="pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
           <div>Our Mission: To make long-distance travel more efficient, affordable, and human.</div>

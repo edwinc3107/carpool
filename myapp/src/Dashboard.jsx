@@ -9,36 +9,28 @@ import axios from "axios";
 import Widget from "./assets/Widget";
 import Map from "./Map";
 import HostCard from "./assets/HostCard";
+import RidePopUp from "./assets/RidePopUp";
 
 function Dashboard(){
     const { user } = useContext(UserContext);
     const [pendingRequests, setPendingRequests] = useState([]);
     const [hosted, setHosted] = useState([])
+    const [selectedRide, setSelectedRide] = useState(null);
+
+
+
     const widgets =[
       {
         title: "Fuel",
         value: '--',
-        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
-</svg>
-) 
       },
             {
         title: "Distance travelled",
         value: '--',
-        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
-</svg>
-) 
       },
             {
         title: "CO2 emissions",
-        value: '--',
-        logo: (<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.122 17.645a7.185 7.185 0 0 1-2.656 2.495 7.06 7.06 0 0 1-3.52.853 6.617 6.617 0 0 1-3.306-.718 6.73 6.73 0 0 1-2.54-2.266c-2.672-4.57.287-8.846.887-9.668A4.448 4.448 0 0 0 8.07 6.31 4.49 4.49 0 0 0 7.997 4c1.284.965 6.43 3.258 5.525 10.631 1.496-1.136 2.7-3.046 2.846-6.216 1.43 1.061 3.985 5.462 1.754 9.23Z"/>
-</svg>
-) 
-      },
+        value: '--',  },
     ];
 
 
@@ -182,7 +174,7 @@ useEffect(() => {
               {pendingRequests.map((p, index) => (
                 <Card key={index} Title={"Request"} feature={
                   <div>
-                    <p>{p.requests[0].name} wants to join you!</p>
+                    <p>{p.requests?.[0]?.name || "Someone"} wants to join you!</p>
                     <p>From: {p.from}</p>
                     <p>To: {p.to}</p>
                     <p>On: {new Date(p.rideDate).toLocaleDateString()}</p>
@@ -214,7 +206,9 @@ useEffect(() => {
                 hosted.map((host, index) => (
                 <HostCard
                   key={index}
-                  Title={host.user?.name || "Unknown Host"} // ✅ Fix: pass a string, not the user object
+                  fromCoords={host.fromCoords}
+                  toCoords={host.toCoords}
+                  Title={host.user?.name || "Unknown Host"} 
                   passenger={host.passengers}
                   feature={
                     <div className="flex-col overflow-y-auto">
@@ -225,9 +219,16 @@ useEffect(() => {
                       <p className="text-black">
                         Date: <span className="font-medium">{new Date(host.rideDate).toLocaleDateString()}</span>
                       </p>
-                      <p className="text-black">
-                        Passengers: <span className="font-medium">{host.passengers}</span>
-                      </p>
+                      {host.passengers?.length > 0 ? (
+                          <p className="text-black">
+                            Passengers:{" "}
+                            <span className="font-medium">
+                              {host.passengers.map(p => p.name).join(", ")}
+                            </span>
+                          </p>
+                        ) : (
+                          <p className="text-black">No passengers yet.</p>
+                        )}
                       <div className="bg-red">
                         <Map
                           fromCoords={host.fromCoords}

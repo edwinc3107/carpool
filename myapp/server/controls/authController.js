@@ -5,6 +5,7 @@ const cookie = require('cookie-parser')
 const RideModel = require('../models/Rides')
 const ChatRoomModel = require('../models/ChatRoom')
 const MessageModel = require('../models/Message')
+const axios = require('axios')
 
 function test(req, res) {
     console.log("Test function!");
@@ -13,11 +14,11 @@ function test(req, res) {
 
 const Testing = async(req, res) => {
   try {
-    const coords = await getCoords("New York");
+    const coords = await orsGeocode("Times Square, New York");
     res.json(coords);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch coords" });
+    res.status(500).json({ error: "ORS geocoding failed" });
   }
 };
 
@@ -112,27 +113,18 @@ const getProfile = async(req, res) =>{
     }
 
   async function getCoords(place) {
-  const apiKey = '6b6ea9be10c57dbca77e8c8a90ff1dca';
-  const url = new URL('https://api.openweathermap.org/geo/1.0/direct');
-  url.search = new URLSearchParams({
-    q: place,
-    limit: '1',     // get the top result
-    appid: apiKey
-  });
+  const apiKey = process.env.ORS_API_KEY;
+  const url = new URL(`https://api.openrouteservice.org/geocode/search`);
+    const response = await fetch(`${url}?api_key=${apiKey}&text=${encodeURIComponent(place)}&size=1`);
+  const data = await response.json();
 
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
-  const data = await res.json();
-
-    if (!data.length) {
-      throw new Error(`No results for "${place}"`);
-    }
-
-    const { lat, lon } = data[0];
-    return { lat, lng: lon };
+  if (!data.features || data.features.length === 0) {
+    throw new Error(`No results for "${place}"`);
   }
 
+  const [lng, lat] = data.features[0].geometry.coordinates;
+  return { lat, lng };
+}
 
   function haversineDistance(lat1, lon1, lat2, lon2, R = 6371) {
     const Δφ = toRadians(lat2 - lat1);
@@ -189,6 +181,7 @@ const HostRide = async (req, res) => {
         if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) {
           throw new Error(`Invalid intermediate stop: ${stop.address}`);
         }
+        
         return {
           address: stop.address,
           lat: coords.lat,
@@ -239,6 +232,11 @@ const HostRide = async (req, res) => {
         lng: coords_to.lng,
       }
     });
+    console.log("Returning rideDetails coords:", {
+  fromCoords: createRide.fromCoords,
+  toCoords: createRide.toCoords,
+  intermediateStops: createRide.intermediateStops,
+});
 
     return res.status(201).json({
       message: "Ride hosted!",
@@ -728,6 +726,55 @@ const myMessages = async (req, res) => {
   }
 };
 
+function convertCoords(ord){
+   if (!ord || typeof ord.lng !== "number" || typeof ord.lat !== "number") {
+    throw new Error("Invalid coordinates passed to convertCoords");
+  }
+   return [ord.lng, ord.lat];
+}
+
+const RideCosts = async(req, res) =>{
+  console.log("req.body:", req.body);
+
+  try{
+
+  const {fromCoords, toCoords} = req.body;
+
+  //API uses [lon, lat], we have {lat:--, lng:---}
+
+  const from_co = convertCoords(fromCoords)
+  const to_co = convertCoords(toCoords)
+
+  //API logic
+  apiKey = process.env.ORS_API_KEY
+  const orsRes = await axios.post(
+      "https://api.openrouteservice.org/v2/directions/driving-car",
+      {
+        coordinates: [from_co, to_co],
+      },
+      {
+        headers: {
+          Authorization: apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const route = orsRes.data.routes[0].summary;
+    const distanceKm = route.distance / 1000; // in km
+    const durationMin = route.duration / 60; // in minutes
+
+    res.status(200).json({
+      distanceKm: distanceKm.toFixed(2),
+      durationMin: durationMin.toFixed(1),
+      etaText: `${Math.floor(durationMin / 60)}h ${Math.round(durationMin % 60)}m`,
+    });
+
+}catch(err){
+  console.log({"error": err})
+}}
+
+
 module.exports = {
     test,
     loginUser,
@@ -750,4 +797,5 @@ module.exports = {
     createChatRoom,
     myChatRooms,
     myMessages,
+    RideCosts,
 };
