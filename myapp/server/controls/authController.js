@@ -5,6 +5,7 @@ const cookie = require('cookie-parser')
 const RideModel = require('../models/Rides')
 const ChatRoomModel = require('../models/ChatRoom')
 const MessageModel = require('../models/Message')
+const axios = require('axios')
 
 function test(req, res) {
     console.log("Test function!");
@@ -13,11 +14,11 @@ function test(req, res) {
 
 const Testing = async(req, res) => {
   try {
-    const coords = await getCoords("New York");
+    const coords = await orsGeocode("Times Square, New York");
     res.json(coords);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch coords" });
+    res.status(500).json({ error: "ORS geocoding failed" });
   }
 };
 
@@ -112,26 +113,18 @@ const getProfile = async(req, res) =>{
     }
 
   async function getCoords(place) {
-  const apiKey = '6b6ea9be10c57dbca77e8c8a90ff1dca';
-  const url = new URL('https://api.openweathermap.org/geo/1.0/direct');
-  url.search = new URLSearchParams({
-    q: place,
-    limit: '1',     // get the top result
-    appid: apiKey
-  });
+  const apiKey = process.env.ORS_API_KEY;
+  const url = new URL(`https://api.openrouteservice.org/geocode/search`);
+    const response = await fetch(`${url}?api_key=${apiKey}&text=${encodeURIComponent(place)}&size=1`);
+  const data = await response.json();
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
-  const data = await res.json();
-
-    if (!data.length) {
-      throw new Error(`No results for "${place}"`);
-    }
-
-    const { lat, lon } = data[0];
-    return { lat, lon };
+  if (!data.features || data.features.length === 0) {
+    throw new Error(`No results for "${place}"`);
   }
 
+  const [lng, lat] = data.features[0].geometry.coordinates;
+  return { lat, lng };
+}
 
   function haversineDistance(lat1, lon1, lat2, lon2, R = 6371) {
     const Δφ = toRadians(lat2 - lat1);
@@ -146,9 +139,9 @@ const getProfile = async(req, res) =>{
     return R * y; // distance in kilometers
     }
 
-
 const HostRide = async (req, res) => {
   const { token } = req.cookies;
+  console.log("Received body:", req.body);
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized. Please login first." });
@@ -158,33 +151,92 @@ const HostRide = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    const { from, to, date, openseats, phone, message, preferences } = req.body;
+    const { from, to, date, openseats, phone, message, preferences, intermediateStops } = req.body;
 
+    // Validate required fields
     if (!from || !to || !date || !openseats || !phone || !preferences) {
       return res.status(400).json({ error: "Please enter all fields!" });
     }
+
     const rideMessage = message || `Ride from ${from} to ${to}. Seats available: ${openseats}.`;
-    console.log({from, to})
 
-    //distance calculation:-
+    // Get coordinates for origin and destination
+    const coords_from = await getCoords(from);
+    const coords_to = await getCoords(to);
 
-    const coords_from = await getCoords(from)
-    const coords_to = await getCoords(to)
-    const distance = haversineDistance(coords_from.lat, coords_from.lon, coords_to.lat, coords_to.lon, R = 6371)
+    // Validate geocoding response
+    if (
+      !coords_from || !coords_to ||
+      isNaN(coords_from.lat) || isNaN(coords_from.lng) ||
+      isNaN(coords_to.lat) || isNaN(coords_to.lng)
+    ) {
+      console.error("Invalid coordinates returned:", { coords_from, coords_to });
+      return res.status(500).json({ error: "Geocoding failed for from/to locations." });
+    }
 
-    console.log(distance);
+    // Geocode intermediate stops with validation
+    const stopsWithCoords = await Promise.all(
+      intermediateStops.map(async (stop) => {
+        const coords = await getCoords(stop.address);
+        if (!coords || isNaN(coords.lat) || isNaN(coords.lng)) {
+          throw new Error(`Invalid intermediate stop: ${stop.address}`);
+        }
+        
+        return {
+          address: stop.address,
+          lat: coords.lat,
+          lng: coords.lng,
+        };
+      })
+    );
 
+    // Build route: from → intermediateStops → to
+    const routePoints = [
+      { lat: coords_from.lat, lng: coords_from.lng },
+      ...stopsWithCoords,
+      { lat: coords_to.lat, lng: coords_to.lng },
+    ];
+
+    // Calculate total distance with Haversine
+    let totalDistance = 0;
+    for (let i = 0; i < routePoints.length - 1; i++) {
+      const a = routePoints[i];
+      const b = routePoints[i + 1];
+      totalDistance += haversineDistance(a.lat, a.lng, b.lat, b.lng);
+    }
+
+    // Validate final distance
+    if (isNaN(totalDistance)) {
+      console.error("Distance calculation failed:", routePoints);
+      return res.status(500).json({ error: "Failed to calculate route distance." });
+    }
+
+    // Save to DB
     const createRide = await RideModel.create({
       user: userId,
       from,
       to,
       rideDate: date,
-      distance: distance,
+      distance: totalDistance,
       openseats,
       phone,
       message: rideMessage,
       preferences,
+      intermediateStops: stopsWithCoords,
+      fromCoords: {
+        lat: coords_from.lat,
+        lng: coords_from.lng,
+      },
+      toCoords: {
+        lat: coords_to.lat,
+        lng: coords_to.lng,
+      }
     });
+    console.log("Returning rideDetails coords:", {
+  fromCoords: createRide.fromCoords,
+  toCoords: createRide.toCoords,
+  intermediateStops: createRide.intermediateStops,
+});
 
     return res.status(201).json({
       message: "Ride hosted!",
@@ -197,6 +249,9 @@ const HostRide = async (req, res) => {
         phone: createRide.phone,
         message: createRide.message,
         preferences: createRide.preferences,
+        fromCoords: createRide.fromCoords,
+        toCoords:createRide.toCoords,
+        intermediateStops: createRide.intermediateStops,
       },
     });
   } catch (err) {
@@ -204,6 +259,7 @@ const HostRide = async (req, res) => {
     return res.status(500).json({ error: "Server error. Try again later." });
   }
 };
+
 
 const FindRide = async (req, res) => {
     const { token } = req.cookies;
@@ -660,7 +716,7 @@ const myMessages = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const messages = await MessageModel.find({ chatRoom: chatRoomId })
+    const messages = await MessageModel.find({ ride: chatRoomId })
     .populate("sender", "name") 
     .sort({ timestamp: 1 });
     return res.json({ messages });
@@ -669,6 +725,55 @@ const myMessages = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+function convertCoords(ord){
+   if (!ord || typeof ord.lng !== "number" || typeof ord.lat !== "number") {
+    throw new Error("Invalid coordinates passed to convertCoords");
+  }
+   return [ord.lng, ord.lat];
+}
+
+const RideCosts = async(req, res) =>{
+  console.log("req.body:", req.body);
+
+  try{
+
+  const {fromCoords, toCoords} = req.body;
+
+  //API uses [lon, lat], we have {lat:--, lng:---}
+
+  const from_co = convertCoords(fromCoords)
+  const to_co = convertCoords(toCoords)
+
+  //API logic
+  apiKey = process.env.ORS_API_KEY
+  const orsRes = await axios.post(
+      "https://api.openrouteservice.org/v2/directions/driving-car",
+      {
+        coordinates: [from_co, to_co],
+      },
+      {
+        headers: {
+          Authorization: apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const route = orsRes.data.routes[0].summary;
+    const distanceKm = route.distance / 1000; // in km
+    const durationMin = route.duration / 60; // in minutes
+
+    res.status(200).json({
+      distanceKm: distanceKm.toFixed(2),
+      durationMin: durationMin.toFixed(1),
+      etaText: `${Math.floor(durationMin / 60)}h ${Math.round(durationMin % 60)}m`,
+    });
+
+}catch(err){
+  console.log({"error": err})
+}}
+
 
 module.exports = {
     test,
@@ -692,4 +797,5 @@ module.exports = {
     createChatRoom,
     myChatRooms,
     myMessages,
+    RideCosts,
 };

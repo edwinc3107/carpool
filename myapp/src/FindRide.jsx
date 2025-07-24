@@ -7,7 +7,8 @@ import MyRides from "./MyRides";
 
 function FindRide(){
 const [foundRides, setFoundRides] = useState([]);
-const [clicked, setClicked] = useState({})
+const [clicked, setClicked] = useState({});
+const [selectedRideForMap, setSelectedRideForMap] = useState(null);
 const [data, setData]=useState({    
     from: "",
     to: "",
@@ -20,7 +21,7 @@ const [data, setData]=useState({
       smoking: false,
       pets: false,
     },
-  })
+  });
 
   function handleChange(e){
     const { name, value, type, checked } = e.target
@@ -98,6 +99,25 @@ const [data, setData]=useState({
       toast.error("Could not host ride. Please try again later.");
     }
   }
+
+  function RideMap({ ride }) {
+  if (!ride) return null;
+
+  // Defensive fallback if coords missing
+  if (!ride.fromCoords || !ride.toCoords) {
+    return <p className="text-red-500">Map data not available for this ride.</p>;
+  }
+
+  return (
+    <div className="my-10 mx-20 rounded-xl shadow-md overflow-hidden">
+      <MapRoute
+        from={ride.fromCoords}
+        to={ride.toCoords}
+        stops={ride.intermediateStopsCoords || []}
+      />
+    </div>
+      );
+    }
 
   async function handleRequest(e, rideId, from, to) {
     e.preventDefault();
@@ -241,7 +261,9 @@ const [data, setData]=useState({
                 <div className="mt-10 text-white">
                   <h2 className="text-2xl mb-4 px-30 font-sans">Available Rides</h2>
                   {foundRides.map((ride) => (
-                    <div key={ride._id} className="bg-white/10  p-5 mb-4 m-20 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
+                    <div key={ride._id} 
+                    onClick={() => setSelectedRideForMap(ride)}
+                    className="bg-white/10  p-5 mb-4 m-20 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
                               <div>
                               <div className="flex p-1 bg-red-300 gap-10 h-30">
                                         <div className="p-4 m-2 bg-red-400 w-50 h-20">
@@ -267,6 +289,9 @@ const [data, setData]=useState({
                             <User size={16} />
                             <strong className="text-sm">Host:</strong> <p>{ride.user?.name || 'Unknown'}</p>
                           </div>
+                        {ride.eligibleForRedirect && (
+                          <span className="text-green-400 text-xs font-semibold">✔ Eligible for Redirect</span>
+                        )}
                         <div>
                             <div className="flex p-1 items-center gap-2">
                             <Users size={16} />
@@ -291,6 +316,7 @@ const [data, setData]=useState({
                           <button
                               disabled={clicked[ride._id]}
                               onClick={(e) => {
+                                 e.stopPropagation(); 
                                 handleRequest(e, ride._id, ride.from, ride.to);
                               }}
                               className={`m-20 font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 ease-in-out
@@ -306,6 +332,13 @@ const [data, setData]=useState({
                       </div>
                       </div>
                   ))}
+                  {selectedRideForMap ? (
+                      <RideMap ride={selectedRideForMap} />
+                    ) : (
+                      <p className="text-center mt-10 text-gray-400">
+                        Click a ride above to view its route on the map.
+                      </p>
+                    )}
                 </div>
               )}
          </div>

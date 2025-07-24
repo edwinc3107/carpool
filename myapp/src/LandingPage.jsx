@@ -1,99 +1,206 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Button from "./Button";
-import Register from "./Register";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import Card from './assets/Card';
+import Brick from "./assets/Brick";
+
 function Landing() {
   const features = [
-    "🚗 Your new favourite way to travel – save money, time & fuel",
-    "👥 Share a ride with friends, neighbours – or even strangers going your way!",
-    "⚡ Optimized routes, dynamic matching, and an easy way to link up",
-    "🌿 Reduce your carbon footprint — make travel sustainable",
-    "🚀 It's like UberPool, but smarter, cheaper, and built for students",
+    {
+      title: "Smart Routes",
+      feature: "Get matched with riders heading in your direction—even if they’re joining from in-between stops.",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M12 5a3 3 0 1 0-5.997.125..." />
+        </svg>
+      )
+    },
+    {
+      title: "Sustainability Board",
+      feature: "See how much CO₂ you’ve saved and your impact on fuel usage with every shared ride.",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M7 19H4.815..." />
+        </svg>
+      )
+    },
+    {
+      title: "Flexible Ride Hosting",
+      feature: "Host rides on your terms—set your stops, choose your passengers, and manage everything easily.",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M11 19l-1.106..." />
+        </svg>
+      )
+    },
+    {
+      title: "Ride Alerts",
+      feature: "Instantly get notified when new riders join your trip or when matching rides pop up.",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M7 18v-6a5 5..." />
+        </svg>
+      )
+    },
+    {
+      title: "Route Planner",
+      feature: "Visualize your trip from start to stop with a smart interactive map.",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle cx="12" cy="4.5" r="2.5" />
+          <path d="m10.2 6.3..." />
+        </svg>
+      )
+    },
+    {
+      title: "Travel Analytics",
+      feature: "Review your ride stats, distance covered, cost saved, and more—all in one place.",
+      link: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M21 12c.552..." />
+        </svg>
+      )
+    }
   ];
 
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % features.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-  const navigate = useNavigate();
-  const goToRegister = () => {
-    navigate('/register');
-  };
-
   return (
-    <div className="w-screen h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white flex items-center justify-center px-4"
-         style={{ fontFamily: "Orbitron" }}>
-
-      <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-7xl gap-12">
-        
-        {/* LEFT */}
-        <div className="text-center md:text-left md:w-1/2">
-          <div className="flex justify-center md:justify-start items-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="75" height="75" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"></path>
-              <path d="M7 14h.01"></path>
-              <path d="M17 14h.01"></path>
-              <rect width="18" height="8" x="3" y="10" rx="2"></rect>
-              <path d="M5 18v2"></path>
-              <path d="M19 18v2"></path>
-            </svg>
+    <div className="bg-gradient-to-b from-lime-50 to-lime-200 min-h-screen">
+      {/* Hero Section */}
+      <section className="pt-65 pb-65 px-6 text-center">
+        <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-4">
+          Carpooling, made simple with <br></br>
+          <div class="relative inline-flex">
+              <span class="absolute inset-x-0 bottom-0 border-b-[30px] border-[#4ADE80]"></span>
+              <h1 class="relative text-4xl font-bold text-black sm:text-6xl lg:text-7xl">Envo.</h1>
           </div>
+        </h1>
+        <p className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mt-4">
+          Plan rides, reduce carbon footprints, and build smarter travel habits - <br></br>
+          
+          <b>all in one place.</b>
+        </p>
+        <div className="mt-8">
+          <a
+            href="/explore"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg text-lg font-semibold"
+          >
+            Start Exploring
+          </a>
+        </div>
+      </section>
 
-          <h1 className="text-4xl leading-snug">
-            Welcome to the <span className="font-extrabold text-lime-400">future</span> of <br />
-            <motion.span
-              className="text-white text-5xl font-extrabold drop-shadow-[0_2px_2px_rgba(0,255,0,0.5)]"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
-              Carpool
-            </motion.span>
-          </h1>
+      {/* Features Section */}
+          <section className="container mx-auto px-4 py-16">
+      {features.map((feature, index) => (
+        <Brick
+          key={index} 
+          title={feature.title}
+          description={feature.feature} 
+          graphic={feature.graphic}
+          reverse={index % 2 !== 0} 
+        />
+      ))}
+    </section>
 
-          <div className="flex justify-center md:justify-start gap-3 mt-6">
-            <Button message={"I'm new here"} onClick={goToRegister}/>
-            <Button message={"Login"} onClick={()=>{ navigate('/login')}}/>
+      <section className="py-15 px-20 text-5xl sm:text-6xl font-bold text-gray-900 mb-4 grid grid-cols-2">
+
+        <div className="p-20">
+          <div class="relative inline-flex">
+              <span class="absolute inset-x-0 bottom-0 border-b-[30px] border-[#4ADE80]"></span>
+              <h1 class="relative text-4xl font-bold text-black sm:text-6xl lg:text-7xl">Log In</h1>
           </div>
+         
+         <p className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mt-4">
+          View past trips, tailored suggestions, support resources, <b>and more</b>.</p>
+                <button
+      className="
+        inline-flex items-center justify-center flex-auto
+        bg-white text-gray-900
+        rounded-xl
+        shadow-[transparent_0_0_0_3px,rgba(18,18,18,.1)_0_6px_20px]
+        hover:shadow-[#121212_0_0_0_3px,transparent_0_0_0_0]
+        cursor-pointer
+        font-inter font-bold text-xl leading-none
+        py-4 px-5
+        outline-none border-0 select-none touch-manipulation
+        whitespace-nowrap
+        transition-shadow duration-200
+      "
+      role="button"
+    >
+      Login 
+    </button>
         </div>
 
-        <motion.div
-          className="bg-gradient-to-br from-gray-800 to-black text-white rounded-3xl px-10 py-12 shadow-2xl w-full md:max-w-2xl border border-lime-400 min-h-[250px] transition-all duration-700 ease-in-out"
-        >
-          <h2 className="text-xl font-semibold text-lime-400 mb-4 text-center">Why Carpool?</h2>
+        <div className="bg-blue border-l border-grey-400 p-20">
 
-          <div className="min-h-[120px] text-lg leading-relaxed text-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 60 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -60 }}
-                transition={{ duration: 0.6 }}
-              >
-                {features[index]}
-              </motion.div>
-            </AnimatePresence>
+        <div class="relative inline-flex">
+              <span class="absolute inset-x-0 bottom-0 border-b-[30px] border-[#4ADE80]"></span>
+              <h1 class="relative text-4xl font-bold text-black sm:text-6xl lg:text-7xl">Register</h1> 
           </div>
+         
+         <p className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto mt-4">
+          I'm new here! <br></br>where do I sign up? <br></br></p>
+                <button
+      className="
+        inline-flex items-center justify-center flex-auto
+        bg-white text-gray-900
+        rounded-xl
+        shadow-[transparent_0_0_0_3px,rgba(18,18,18,.1)_0_6px_20px]
+        hover:shadow-[#121212_0_0_0_3px,transparent_0_0_0_0]
+        cursor-pointer
+        font-inter font-bold text-xl leading-none
+        py-4 px-5
+        outline-none border-0 select-none touch-manipulation
+        whitespace-nowrap
+        transition-shadow duration-200
+      "
+      role="button"
+    >
+      Register
+    </button>
 
-          <div className="flex justify-center gap-2 mt-6">
-            {features.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => setIndex(i)}
-                className={`w-3 h-3 rounded-full cursor-pointer transition-all ${
-                  i === index ? "bg-lime-400 scale-125" : "bg-gray-500"
-                }`}
-              ></div>
-            ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-30 bg-white px-20">
+          <div class="relative inline-flex">
+              <span class="absolute inset-x-0 bottom-0 border-b-[30px] border-[#4ADE80]"></span>
+              <h1 class="relative text-4xl font-bold text-black sm:text-6xl lg:text-7xl pt-15">Testimonials</h1> 
           </div>
-        </motion.div>
-      </div>
+        <p className="text-lg text-gray-600 mt-2">
+          Hear what other users - have to say!
+        </p>
+        <div className="mt-6 flex justify-center pb-15">
+          <Card title={"Willam Dierich"} feature ={"Great app, the founder is on track to be an absolute tech god."}>
+          </Card>
+          <Card title={"Elon Musk"} feature ={"Can I buy this from you?"}>
+          </Card>
+          <Card title={"Josh"} feature ={"Slay queen."}>
+          </Card>
+        </div>
+        <div className="text-gray-400 pl-90 text-italic">
+          "I always aim to put our customers first and solve problems I've lived through. <br></br> Experience is king."
+          <br></br> - Edwin, CEO & Founder
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 text-center">
+        <h2 className="text-3xl font-bold text-gray-900">Ready to ride with Envo?</h2>
+        <p className="text-lg text-gray-600 mt-2">
+          Join thousands of smart commuters today and start saving on every trip.
+        </p>
+        <div className="mt-6">
+          <a
+            href="/signup"
+            className="bg-lime-600 hover:bg-lime-700 text-white px-10 py-4 rounded-full text-lg font-semibold transition"
+          >
+            Get Started
+          </a>
+        </div>
+      </section>
+      {/* Testimonials */}
+
     </div>
   );
 }
