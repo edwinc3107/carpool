@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useState, useRef,useEffect } from "react";
 import axios from "axios";
 import { toast } from 'react-hot-toast';
 import Navbar from "./Navbar";
 import { MapPin, CalendarDays, User, Phone, Users } from 'lucide-react';
 import MyRides from "./MyRides";
+import Button from "./assets/Button";
+import Card from "./assets/AvailableRide";
 
 function FindRide(){
 const [foundRides, setFoundRides] = useState([]);
 const [clicked, setClicked] = useState({});
 const [selectedRideForMap, setSelectedRideForMap] = useState(null);
+const ridesPerPage = 9;
+const totalPages = Math.ceil(foundRides.length/9);
+const [page, setPage] = useState(0);
+const paginatedRides = foundRides.slice(page * 9, (page + 1) * 9);
+const rideGridRef = useRef(null);
+const availableRidesRef = useRef(null);
+
 const [data, setData]=useState({    
     from: "",
     to: "",
@@ -22,6 +31,18 @@ const [data, setData]=useState({
       pets: false,
     },
   });
+
+useEffect(() => {
+  if (rideGridRef.current) {
+    rideGridRef.current.scrollIntoView({ behavior: 'smooth' });
+  }
+}, [page]);
+
+useEffect(() => {
+  if (foundRides.length > 0) {
+    availableRidesRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+}, [foundRides]);
 
   function handleChange(e){
     const { name, value, type, checked } = e.target
@@ -165,161 +186,120 @@ const [data, setData]=useState({
       return(
         <>
         <Navbar></Navbar>
-        <div className="w-full h-full bg-black text-white">
-        <div className=" pt-60  pb-30 font-semibold text-6xl flex justify-center font-sans text-lime-400">
+        <div className="w-full h-full bg-black text-black">
+        <div className=" pt-40 pl-175  pb-30 font-semibold text-6xl flex justify-center font-sans text-lime-400">
             So, where you off to?<br></br>Fill the form below & find your ride!
         </div>
-        <div className="py-15 grid-rows-3 flex justify-between px-30">
-            <form onSubmit={onSubmit} className="w-full max-w-3xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl px-10 py-14 text-white shadow-xl transition-all duration-300">
-                <h2 className="text-3xl font-bold text-lime-400 mb-8 text-center">Find a Ride</h2>
-                <div className="grid gap-6">
-                    <div className="flex justify-between">
-                    <div>
-                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Start Location</label>
-                    <input
-                        type="text"
-                        name="from"
-                        value={data.from}
-                        onChange={handleChange}
-                        placeholder="Where are you leaving from?"
-                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
-                    />
-                    </div>
+        <div className="py-15 grid-rows-3 flex justify-between px-30 text-gray-300">
+          <form onSubmit={onSubmit} className="w-full max-w-3xl mx-10 bg-white text-gray-900 backdrop-blur-md px-10 py-14 shadow-xl transition-all duration-300">
+                <h2 className="text-3xl text-black mb-8 text-left">Find your Ride</h2>
+                                  <div className="grid gap-6">
+                                  {/* === Location & Date Fields === */}
+                                  <div className="flex flex-col gap-6">
+                                  {/** Start Location */}
+                                  <div className="group">
+                                    <label htmlFor="from" className="block mb-1 text-sm font-semibold text-[#05060f99] transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] group-focus-within:text-[#05060fc2]">
+                                      Start Location
+                                    </label>
+                                    <input
+                                      id="from"
+                                      name="from"
+                                      type="text"
+                                      value={data.from}
+                                      onChange={handleChange}
+                                      placeholder="Where are you leaving from?"
+                                      className="w-full h-11 max-w-full bg-[#05060f0a] rounded-md px-4 border-2 border-transparent text-base transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] focus:outline-none focus:border-[#05060f] group-hover:border-[#05060f]"
+                                    />
+                                  </div>
 
-                    <div>
-                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Stop Location</label>
-                    <input
-                        type="text"
-                        name="to"
-                        value={data.to}
-                        onChange={handleChange}
-                        placeholder="Where are you going?"
-                        className="w-full px-4 py-3 bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
-                    />
-                    </div>
+                                  {/** Stop Location */}
+                                  <div className="group">
+                                    <label htmlFor="to" className="block mb-1 text-sm font-semibold text-[#05060f99] transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] group-focus-within:text-[#05060fc2]">
+                                      Stop Location
+                                    </label>
+                                    <input
+                                      id="to"
+                                      name="to"
+                                      type="text"
+                                      value={data.to}
+                                      onChange={handleChange}
+                                      placeholder="Where are you going?"
+                                      className="w-full h-11 max-w-full bg-[#05060f0a] rounded-md px-4 border-2 border-transparent text-base transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] focus:outline-none focus:border-[#05060f] group-hover:border-[#05060f]"
+                                    />
+                                  </div>
 
-                    <div>
-                    <label className="block text-sm uppercase tracking-wide font-medium mb-2">Date of Travel</label>
-                    <input
-                        type="date"
-                        name="date"
-                        value={data.date}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3  bg-black border border-white/30 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
-                    />
-                    </div></div>
-                    <fieldset className="border border-white/30 rounded-xl p-5">
-                    <legend className="text-sm uppercase font-semibold text-white mb-4">Preferences</legend>
-                    <div className="flex flex-col gap-3">
-                        <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={data.preferences.music}
-                            onChange={handleChange}
-                            name="preferences.music"
-                            className="accent-lime-400 w-5 h-5 mr-3"
-                        />
-                        Music Allowed
-                        </label>
-                        <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            name="preferences.smoking"
-                            checked={data.preferences.smoking}
-                            onChange={handleChange}
-                            className="accent-lime-400 w-5 h-5 mr-3"
-                        />
-                        Smoking Allowed
-                        </label>
-                        <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            name="preferences.pets"
-                            checked={data.preferences.pets}
-                            onChange={handleChange}
-                            className="accent-lime-400 w-5 h-5 mr-3"
-                        />
-                        Pets Allowed
-                        </label>
-                    </div>
-                    </fieldset>
+                                  {/** Date of Travel */}
+                                  <div className="group">
+                                    <label htmlFor="date" className="block mb-1 text-sm font-semibold text-[#05060f99] transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] group-focus-within:text-[#05060fc2]">
+                                      Date of Travel
+                                    </label>
+                                    <input
+                                      id="date"
+                                      name="date"
+                                      type="date"
+                                      value={data.date}
+                                      onChange={handleChange}
+                                      className="w-full h-11 max-w-full bg-[#05060f0a] rounded-md px-4 border-2 border-transparent text-base transition-colors duration-300 ease-[cubic-bezier(0.25,0.01,0.25,1)] focus:outline-none focus:border-[#05060f] group-hover:border-[#05060f]"
+                                    />
+                                  </div>
+                                  </div>
 
-                    <div className="flex justify-center pt-4">
-                    <button
-                        type="submit"
-                        className="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-transform transform hover:scale-105"
-                    >
-                        Find
-                    </button>
-                    </div>
-                </div>
-                </form>
+                                  {/* === Preferences Section === */}
+                                  <fieldset className="border border-white/30 rounded-xl p-5 mt-4">
+                                  <legend className="text-sm uppercase font-semibold text-[#05060fc2] mb-4">Preferences</legend>
+                                  <div className="flex flex-col gap-3">
+                                    {[
+                                      { label: "Music Allowed", name: "music" },
+                                      { label: "Smoking Allowed", name: "smoking" },
+                                      { label: "Pets Allowed", name: "pets" },
+                                    ].map((pref) => (
+                                      <label key={pref.name} className="inline-flex items-center">
+                                        <input
+                                          type="checkbox"
+                                          name={`preferences.${pref.name}`}
+                                          checked={data.preferences[pref.name]}
+                                          onChange={handleChange}
+                                          className="accent-lime-500 w-5 h-5 mr-3"
+                                        />
+                                        {pref.label}
+                                      </label>
+                                    ))}
+                                  </div>
+                                  </fieldset>
+
+                                  {/* === Submit Button === */}
+                                  <div className="flex justify-center pt-6">
+                                    <Button
+                                  title={"Find"}></Button>
+                                  </div>
+                                  </div>
+
+                                  </form>
 
         </div>
         <div>
-            {foundRides.length > 0 && (
-                <div className="mt-10 text-white">
-                  <h2 className="text-2xl mb-4 px-30 font-sans">Available Rides</h2>
-                  {foundRides.map((ride) => (
+            {paginatedRides.length > 0 && (
+                <div ref={availableRidesRef}>
+                <h2 className="pt-40 pr-175 pb-10 font-semibold text-6xl flex justify-center font-sans text-lime-400">
+                  Available Rides
+                </h2>
+                <div ref={rideGridRef} className="mt-30 ml-30 text-white p-20 grid grid-cols-3">
+                  {paginatedRides.map((ride) => (
                     <div key={ride._id} 
                     onClick={() => setSelectedRideForMap(ride)}
-                    className="bg-white/10  p-5 mb-4 m-20 rounded-xl shadow-md border border-white/20 hover:bg-white/20 transition">
-                              <div>
-                              <div className="flex p-1 bg-red-300 gap-10 h-30">
-                                        <div className="p-4 m-2 bg-red-400 w-50 h-20">
-                                          <strong className="text-sm flex items-center gap-1">
-                                            <MapPin size={16} /> From:
-                                          </strong>
-                                          <p className="text-xl break-words">{ride.from}</p>
-                                        </div>
-                                        <div className="p-4 m-2 bg-blue-400 w-50 h-20">
-                                          <strong className="text-sm flex items-center gap-1">
-                                            <MapPin size={16} /> To:
-                                          </strong>
-                                          <p className="text-xl break-words">{ride.to}</p>
-                                        </div>
-                                      </div>
-                          <div className="flex">
-                          <div className="bg-green-500 p-1 py-10">
-                          <div className="flex p-1 items-center gap-2">
-                            <CalendarDays size={16} />
-                            <strong className="text-sm">Date:</strong> {new Date(ride.rideDate).toDateString().split(' ')[1]+ ' '+ new Date(ride.rideDate).toDateString().split(' ')[2]+ ', '+new Date(ride.rideDate).toDateString().split(' ')[3]}
-                          </div>
-                          <div className="flex p-1 items-center gap-2">
-                            <User size={16} />
-                            <strong className="text-sm">Host:</strong> <p>{ride.user?.name || 'Unknown'}</p>
-                          </div>
-                        {ride.eligibleForRedirect && (
-                          <span className="text-green-400 text-xs font-semibold">✔ Eligible for Redirect</span>
-                        )}
-                        <div>
-                            <div className="flex p-1 items-center gap-2">
-                            <Users size={16} />
-                            <strong className="text-sm">Open Seats:</strong> <p>{ride.openseats}</p>
-                          </div>
-                        </div>
-                        </div>
-                        <div>
-                        <div className="flex gap-50 bg-blue-700 p-10 gap-10 ml-20 mt-10">
-                        <div>
-                            <strong className="text-sm">Distance:</strong> <p>{ride.distance?.toFixed(1)} km</p>
-                        </div>
-                        <div>
-                            <strong className="text-sm">Duration:</strong> <p>{'Value'}</p>
-                        </div>
-                        <div>
-                            <strong className="text-sm">Price:</strong> <p>{'Value'}</p>
-                        </div>
-                      </div>
-                        </div>
-                        <div>
+                    className="">
+                      <div className="mb-20">
+                      <Card from={ride.from} to={ride.to} date={new Date(ride.rideDate).toDateString().split(' ')[1]+ ' '+ new Date(ride.rideDate).toDateString().split(' ')[2]+ ', '+new Date(ride.rideDate).toDateString().split(' ')[3]} 
+                      distance={ride.distance?.toFixed(1)} seats={ride.openseats} host={ride.user?.name || 'Unknown'}
+                      button={
+                          <div>
                           <button
                               disabled={clicked[ride._id]}
                               onClick={(e) => {
                                  e.stopPropagation(); 
                                 handleRequest(e, ride._id, ride.from, ride.to);
                               }}
-                              className={`m-20 font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 ease-in-out
+                              className={`m-10 font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 ease-in-out
                                 ${clicked[ride._id]
                                   ? 'bg-gray-400 cursor-not-allowed'
                                   : 'bg-lime-500 hover:bg-lime-600 text-white hover:shadow-lg'}
@@ -328,20 +308,67 @@ const [data, setData]=useState({
                               {clicked[ride._id] ? <p>Requested</p> : <p>Request to join</p>}
                             </button>
                           </div>
-                        </div>
-                      </div>
+                      }
+                      ></Card></div>
                       </div>
                   ))}
-                  {selectedRideForMap ? (
-                      <RideMap ride={selectedRideForMap} />
-                    ) : (
-                      <p className="text-center mt-10 text-gray-400">
-                        Click a ride above to view its route on the map.
-                      </p>
-                    )}
+                </div> 
+                  <div className="flex justify-center gap-4">
+                      {page === 0 ? null : (
+                        <button
+                          className="bg-lime-500 flex justify-center gap-2 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:bg-lime-400 hover:scale-105 transition duration-300"
+                          onClick={() => setPage(page - 1)}
+                        >
+                                                <svg
+                        role="img"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="24px"
+                        height="24px"
+                      >
+                        <path
+                          fill="none"
+                          stroke="#ffffff"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="m12 19l-7-7l7-7m7 7H5"
+                        />
+                      </svg>
+
+                          Prev
+                        </button>
+                      )}
+                      {page === totalPages-1 ? null : (
+                        <button
+                          className="bg-lime-500 flex justify-center gap-2 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:bg-lime-400 hover:scale-105 transition duration-300"
+                          onClick={() => setPage(page + 1)}
+                        >
+                          <svg
+  role="img"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="24px"
+  height="24px"
+>
+  <path
+    fill="none"
+    stroke="#ffffff"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    d="M5 12h14m-7-7l7 7l-7 7"
+  />
+</svg>
+
+                          Next
+                        </button>
+                      )}
+                    </div>
                 </div>
               )}
-         </div>
+              
+         </div>  
         <div className= "pt-60 px-65 font-semibold text-5xl flex justify-center font-sans text-lime-400">
             <div>
             Our Mission : to make long-distance travel more efficient, affordable, and human.
