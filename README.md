@@ -1,6 +1,8 @@
 # Envo – Smart Carpooling  
 
-Envo is a full-stack web platform designed to make long-distance ride-sharing smarter, more sustainable, and socially connected. The platform enables users to host or join rides, match with passengers traveling to intermediate locations, and communicate in real time. By focusing on route optimization and fuel savings, Envo promotes environmental sustainability while improving accessibility and affordability of travel.  
+Envo is a full-stack web platform designed to make long-distance ride-sharing smarter, more sustainable, and socially connected. 
+Built with MERN + Socket.IO to promote sustainability through fuel and CO₂ savings.  
+
 
 ## Features
 - **Ride Hosting & Matching** → users can host rides and passengers can join based on exact or intermediate destinations.  
