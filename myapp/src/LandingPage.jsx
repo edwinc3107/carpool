@@ -171,11 +171,11 @@ function Landing() {
           Hear what other users - have to say!
         </p>
         <div className="mt-6 flex justify-center pb-15">
-          <Card title={"Willam Dierich"} feature ={"Great app, the founder is on track to be an absolute tech god."}>
+          <Card title={"William Dierich"} feature ={"Great app. Easy to use."}>
           </Card>
           <Card title={"Elon Musk"} feature ={"Can I buy this from you?"}>
           </Card>
-          <Card title={"Josh"} feature ={"Slay queen."}>
+          <Card title={"Josh"} feature ={"Saved time, stress & effort. Great use of technology."}>
           </Card>
         </div>
         <div className="text-gray-400 pl-90 text-italic">
