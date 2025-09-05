@@ -2,9 +2,6 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import Button from "./Button";
-import Form from "./assets/Form";
-
 
 function Register() {
   const [name, setName] = useState("");
@@ -50,7 +47,7 @@ function Register() {
         setName("");
         setEmail("");
         setPassword("");
-        navigate("/l");
+        navigate("/login"); // updated route for clarity
       }
     } catch (err) {
       console.error("Registration error:", err);
@@ -59,37 +56,59 @@ function Register() {
   }
 
   return (
-    <div
-      className="w-screen h-screen bg-gradient-to-br to-gray-700 text-white flex justify-center items-center"
-      style={{ fontFamily: "Orbitron" }}
-    >
-      <div className="flex justify-center gap-2 py-4">
-        <Form title="Welcome, register here!" onSubmit={RegisterSubmit}>
+    <div className="min-h-screen bg-gradient-to-br from-lime-100 to-lime-300 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white shadow-xl p-10">
+
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+          <p className="text-gray-600 mt-2">Join Envo and start sharing rides smarter, safer, and greener.</p>
+        </div>
+
+        <form onSubmit={RegisterSubmit} className="flex flex-col gap-5">
           <input
             type="text"
-            placeholder="Enter your username"
-            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
+            placeholder="Full Name"
+            className="w-full p-3 rounded-xl border border-lime-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-500"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           <input
             type="email"
-            placeholder="Enter your email"
-            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
+            placeholder="Email Address"
+            className="w-full p-3 rounded-xl border border-lime-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-500"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
-            placeholder="Enter your password"
-            className="w-full p-2 rounded text-lime-400 border border-lime-400 placeholder-lime-400"
+            placeholder="Password"
+            className="w-full p-3 rounded-xl border border-lime-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-        </Form>
+            <button title="Log In" className="mt-4 w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 transition">
+            Register
+            </button>
+        </form>
+         <div>
+
+
+       </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-500">
+            Already have an account?{" "}
+            <span
+              className="text-lime-600 font-semibold cursor-pointer hover:underline"
+              onClick={() => navigate("/login")}
+            >
+              Log In
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );

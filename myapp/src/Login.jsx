@@ -2,16 +2,14 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import Form from "./assets/Form";
-import Button from "./Button"; 
 import { UserContext } from "./context/UserContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setUser } = useContext(UserContext);
 
   async function LoginSubmit(e) {
     e.preventDefault();
@@ -23,6 +21,7 @@ function Login() {
       if (response.data && !response.data.error) {
         setEmail("");
         setPassword("");
+        setUser(response.data);
         toast.success("Login Successful!", {
           style: {
             border: "1px solid #84cc16",
@@ -35,7 +34,6 @@ function Login() {
             secondary: "#F7FEE7",
           },
         });
-        setUser(response.data);
         navigate("/dashboard");
       } else {
         toast.error(response.data.error || "Login failed", {
@@ -52,37 +50,59 @@ function Login() {
         });
       }
     } catch (err) {
-      console.log(err);
-      toast.error("Something went wrong. Check console.");
+      console.error(err);
+      toast.error("Server error. Please try again later.");
     }
   }
 
   return (
-    <div
-      className="w-screen h-screen bg-gradient-to-br to-gray-700 text-white flex justify-center items-center"
-      style={{ fontFamily: "Orbitron" }}
-    >
-      <div className="flex justify-center gap-2 py-4">
-        <Form title="Login" onSubmit={LoginSubmit}>
+    <div className="min-h-screen bg-gradient-to-br from-lime-100 to-lime-300 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white shadow-xl p-10">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back!</h1>
+          <p className="text-gray-600 mt-2">Log in to access your rides and manage your account.</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={LoginSubmit} className="flex flex-col gap-5">
           <input
             type="email"
-            placeholder="Enter your email"
-            className="w-full p-2 rounded border border-lime-400 text-lime-400 placeholder-lime-400"
+            placeholder="Email Address"
+            className="w-full p-3 rounded-xl border border-lime-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-500"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <input
             type="password"
-            placeholder="Enter your password"
-            className="w-full p-2 rounded border border-lime-400 text-lime-400 placeholder-lime-400"
+            placeholder="Password"
+            className="w-full p-3 rounded-xl border border-lime-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lime-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
-        </Form>
+
+          <button title="Log In" className="mt-4 w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 transition">
+            Log in
+            </button>
+        </form>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-500">
+            Don’t have an account?{" "}
+            <span
+              className="text-lime-600 font-semibold cursor-pointer hover:underline"
+              onClick={() => navigate("/register")}
+            >
+              Register
+            </span>
+          </p>
+        </div>
       </div>
     </div>
-
-  )
+  );
 }
 
 export default Login;
