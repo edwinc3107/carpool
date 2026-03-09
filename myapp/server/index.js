@@ -8,14 +8,15 @@ const { Server } = require("socket.io")
 const MessageModel = require('./models/Message')
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
+const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
   credentials: true,
-  origin: 'http://localhost:5173', 
+  origin: clientOrigin,
 }));
 
 app.use(express.json());
@@ -37,7 +38,7 @@ app.use('/', require('./routes/authRoutes'));
 //Socket for server-client communication
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: clientOrigin,
     credentials: true
   }
 });

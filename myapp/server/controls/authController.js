@@ -59,36 +59,51 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    try {
-        if (!email || !password) {
-            return res.json({ error: "Please enter all fields" });
-        }
-
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.json({ error: "User not found!" });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.json({ error: "Invalid credentials!" });
-        }
-        
-        const jwtSign = jwt.sign({email: user.email, id: user._id, name: user.name}, process.env.JWT_SECRET,{}, (err, token) =>{
-            if (err){throw err}
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: false,
-                sameSite: 'lax',
-                path: '/'
-                }).json(user)
-        })
-    } catch (err) {
-        console.log("Error occurred:", err);
-        res.status(500).json({ error: "Server error" });
+  try {
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not set in .env");
+      return res.status(500).json({ error: "Server misconfiguration" });
     }
+    if (!email || !password) {
+      return res.json({ error: "Please enter all fields" });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.json({ error: "User not found!" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.json({ error: "Invalid credentials!" });
+    }
+
+    const token = jwt.sign(
+      { email: user.email, id: user._id, name: user.name },
+      process.env.JWT_SECRET,
+      {}
+    );
+    const userWithoutPassword = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    };
+    return res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        path: "/",
+      })
+      .json(userWithoutPassword);
+  } catch (err) {
+    console.error("Login error:", err);
+    return res
+      .status(500)
+      .json({ error: "Server error during login", detail: err.message });
+  }
 };
 
 const getProfile = async(req, res) =>{

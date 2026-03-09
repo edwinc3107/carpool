@@ -19,7 +19,9 @@ import ChatRoom from './ChatRoom'
 // In App.jsx or wherever you define routes
 import MapTest from "./test";
 
-axios.defaults.baseURL= "http://localhost:4000"
+// Use env-based API URL so dev/prod can differ
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true
 
 function App() {
