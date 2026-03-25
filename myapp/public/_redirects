@@ -1,0 +1,3 @@
+# SPA: send unknown paths to index.html so React Router can handle them.
+# Render serves real files under /assets (and other static paths) first.
+/*    /index.html   200
