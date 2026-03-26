@@ -9,14 +9,22 @@ const MessageModel = require('./models/Message')
 
 const app = express();
 const port = process.env.PORT || 4000;
-const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+// Production: set CLIENT_ORIGIN to your frontend URL(s). Comma-separated for prod + local dev, e.g.
+//   https://envo-frontend.onrender.com,http://localhost:5173
+const defaultDevOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'];
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+  : defaultDevOrigins;
 
 const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
   credentials: true,
-  origin: clientOrigin,
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  },
 }));
 
 app.use(express.json());
@@ -38,7 +46,7 @@ app.use('/', require('./routes/authRoutes'));
 //Socket for server-client communication
 const io = new Server(server, {
   cors: {
-    origin: clientOrigin,
+    origin: allowedOrigins,
     credentials: true
   }
 });

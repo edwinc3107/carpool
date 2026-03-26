@@ -7,6 +7,20 @@ const ChatRoomModel = require('../models/ChatRoom')
 const MessageModel = require('../models/Message')
 const axios = require('axios')
 
+/** Frontend + API on different hosts (e.g. two Render URLs) = cross-site; browser requires SameSite=None + Secure for cookies on XHR. */
+function authCookieOptions() {
+  const crossSite =
+    process.env.NODE_ENV === 'production' ||
+    process.env.FORCE_CROSS_SITE_COOKIES === '1' ||
+    process.env.FORCE_CROSS_SITE_COOKIES === 'true';
+  return {
+    httpOnly: true,
+    secure: crossSite,
+    sameSite: crossSite ? 'none' : 'lax',
+    path: '/',
+  };
+}
+
 function test(req, res) {
     console.log("Test function!");
     res.json({ message: "Test route working" });
@@ -91,12 +105,7 @@ const loginUser = async (req, res) => {
       email: user.email,
     };
     return res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        path: "/",
-      })
+      .cookie("token", token, authCookieOptions())
       .json(userWithoutPassword);
   } catch (err) {
     console.error("Login error:", err);
@@ -351,12 +360,7 @@ const FindRide = async (req, res) => {
 const logoutUser = async (req, res) => {
 
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
-      path: "/",
-    });
+    res.clearCookie("token", authCookieOptions());
 
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (err) {
